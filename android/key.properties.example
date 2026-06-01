@@ -1,0 +1,13 @@
+# Copy this file to android/key.properties and fill in your real values.
+# key.properties is git-ignored — never commit the real one or your keystore.
+#
+# Generate a keystore once with:
+#   keytool -genkey -v -keystore ~/nammasign-release.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias nammasign
+#
+# Then point storeFile at that .jks path (absolute path is simplest).
+
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=nammasign
+storeFile=/absolute/path/to/nammasign-release.jks

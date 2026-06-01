@@ -1,0 +1,126 @@
+{
+  "project_info": {
+    "project_number": "1075476022217",
+    "project_id": "namma-empire",
+    "storage_bucket": "namma-empire.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1075476022217:android:9c69628462b251727b1e18",
+        "android_client_info": {
+          "package_name": "com.example.nammasign_phase1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1075476022217-5q14jnrjnhul2gbc9g7102nnnknst85h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3t5DEojmNX0Tz9qWZSyyuxZsKXrC20q0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1075476022217-5q14jnrjnhul2gbc9g7102nnnknst85h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1075476022217-49orvcjecudcif8930vm3a4eh0fr8khj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nammaempire.nammsign"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1075476022217:android:c12cb4939c8a3b3b7b1e18",
+        "android_client_info": {
+          "package_name": "com.nammaempire.nammasign"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1075476022217-5q14jnrjnhul2gbc9g7102nnnknst85h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3t5DEojmNX0Tz9qWZSyyuxZsKXrC20q0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1075476022217-5q14jnrjnhul2gbc9g7102nnnknst85h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1075476022217-49orvcjecudcif8930vm3a4eh0fr8khj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nammaempire.nammsign"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1075476022217:android:97b8dbb9dd16ea747b1e18",
+        "android_client_info": {
+          "package_name": "com.nammaempire.nammsign"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1075476022217-banuda446jqf2ehbkg7qo9ftqom1nplq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nammaempire.nammsign",
+            "certificate_hash": "39cebc97ed3a0ccdf21e48c2d3d16c13bbb26b9e"
+          }
+        },
+        {
+          "client_id": "1075476022217-5q14jnrjnhul2gbc9g7102nnnknst85h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3t5DEojmNX0Tz9qWZSyyuxZsKXrC20q0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1075476022217-5q14jnrjnhul2gbc9g7102nnnknst85h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1075476022217-49orvcjecudcif8930vm3a4eh0fr8khj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nammaempire.nammsign"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

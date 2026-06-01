@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/app_text_styles.dart';
+import 'gradient_border_box.dart';
 
 enum UploadStatus { uploaded, verified, failed }
 
@@ -26,80 +27,75 @@ class UploadedFileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.md,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.15),
-              width: 1,
+    return GradientBorderBox(
+      borderRadius: AppSpacing.radiusMd,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.md,
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(icon, size: 22, color: AppColors.primary),
                 ),
-                alignment: Alignment.center,
-                child: Icon(icon, size: 22, color: AppColors.primary),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      fileName,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textPrimaryOnLight,
-                        fontWeight: FontWeight.w600,
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        fileName,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textPrimaryOnLight,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Text(
-                          sizeLabel,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textTertiaryOnLight,
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Text(
+                            sizeLabel,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textTertiaryOnLight,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '  ·  ',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textTertiaryOnLight,
+                          Text(
+                            '  ·  ',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textTertiaryOnLight,
+                            ),
                           ),
-                        ),
-                        Text(
-                          _statusLabel(status),
-                          style: AppTextStyles.brandFooter.copyWith(
-                            color: AppColors.textTertiaryOnLight,
-                            letterSpacing: 1.5,
+                          Text(
+                            _statusLabel(status),
+                            style: AppTextStyles.brandFooter.copyWith(
+                              color: AppColors.textTertiaryOnLight,
+                              letterSpacing: 1.5,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _statusIcon(status),
-            ],
+                const SizedBox(width: AppSpacing.sm),
+                _statusIcon(status),
+              ],
+            ),
           ),
         ),
       ),
@@ -107,10 +103,10 @@ class UploadedFileCard extends StatelessWidget {
   }
 
   String _statusLabel(UploadStatus s) => switch (s) {
-        UploadStatus.uploaded => 'UPLOADED',
-        UploadStatus.verified => 'VERIFIED',
-        UploadStatus.failed => 'FAILED',
-      };
+    UploadStatus.uploaded => 'UPLOADED',
+    UploadStatus.verified => 'VERIFIED',
+    UploadStatus.failed => 'FAILED',
+  };
 
   Widget _statusIcon(UploadStatus s) {
     switch (s) {

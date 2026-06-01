@@ -13,7 +13,7 @@ class ProfileHeader extends StatelessWidget {
     required this.name,
     required this.accountTypeLabel,
     required this.orgLabel,
-    this.verified = true,
+    this.verified = false,
   });
 
   final String name;
@@ -103,23 +103,28 @@ class ProfileHeader extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            Text(
-              '  ·  ',
-              style: AppTextStyles.brandFooter.copyWith(
-                color: AppColors.textTertiaryOnLight,
-              ),
-            ),
-            Flexible(
-              child: Text(
-                orgLabel.toUpperCase(),
+            // Only show the separator + org when there's actually an org
+            // label (corporate). Individuals have no org, so we'd otherwise
+            // render a dangling " · ".
+            if (orgLabel.trim().isNotEmpty) ...[
+              Text(
+                '  ·  ',
                 style: AppTextStyles.brandFooter.copyWith(
-                  color: AppColors.primary,
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.w700,
+                  color: AppColors.textTertiaryOnLight,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
+              Flexible(
+                child: Text(
+                  orgLabel.toUpperCase(),
+                  style: AppTextStyles.brandFooter.copyWith(
+                    color: AppColors.primary,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ],
         ),
       ],

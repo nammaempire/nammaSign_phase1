@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/widgets/gradient_border_box.dart';
 
 /// Grouped settings card with an uppercase section header above.
 ///
@@ -35,14 +36,8 @@ class SettingsSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.08),
-            ),
-          ),
+        GradientBorderBox(
+          borderRadius: AppSpacing.radiusLg,
           child: Column(
             children: [
               for (var i = 0; i < children.length; i++) ...[

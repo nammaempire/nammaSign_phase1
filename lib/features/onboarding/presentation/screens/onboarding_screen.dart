@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_routes.dart';
@@ -7,23 +8,23 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../shared/providers/app_prefs_provider.dart';
 import '../widgets/billboard_illustration.dart';
 import '../widgets/booking_illustration.dart';
 import '../widgets/map_illustration.dart';
 import '../widgets/onboarding_slide.dart';
 
 /// 3-slide onboarding shown once on first launch.
-/// Matches the Figma — light lavender background, top step counter + skip,
-/// illustration card, two-line serif title, description, page dots,
-/// purple full-width Next/Get started button.
-class OnboardingScreen extends StatefulWidget {
+/// Get started / Skip → marks onboarding complete and routes straight to
+/// /login. The account-type picker is only used in the signup flow now.
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageCtrl = PageController();
   int _index = 0;
 
@@ -74,15 +75,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  void _goToAccountType() {
-    // onboardingComplete is set by AccountTypeScreen after the user picks
-    // a type and taps Continue. Until then, backing out returns to here.
-    context.push(AppRoutes.accountType);
+  Future<void> _finishOnboarding() async {
+    // Mark onboarding complete in prefs + in-memory provider so the router
+    // redirect lets us into /login. Account type is no longer collected
+    // here — the user picks it later if they tap "Create an account" on
+    // the login screen.
+    await ref.read(onboardingSeenProvider.notifier).markComplete();
+    if (!mounted) return;
+    context.go(AppRoutes.login);
   }
 
   void _onNext() {
     if (_index == _slides.length - 1) {
-      _goToAccountType();
+      _finishOnboarding();
     } else {
       _pageCtrl.nextPage(
         duration: AppConstants.mediumAnim,
@@ -114,7 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   const Spacer(),
                   GestureDetector(
-                    onTap: _goToAccountType,
+                    onTap: _finishOnboarding,
                     behavior: HitTestBehavior.opaque,
                     child: Text(
                       'SKIP',

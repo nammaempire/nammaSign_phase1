@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/widgets/gradient_border_box.dart';
 import '../../domain/booking.dart';
 
 /// Single booking row card on the history list.
@@ -14,96 +15,92 @@ class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.08),
-            ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left icon container
-              _StatusIcon(status: booking.status),
-              const SizedBox(width: AppSpacing.md),
+    return GradientBorderBox(
+      borderRadius: AppSpacing.radiusLg,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left icon container
+                _StatusIcon(status: booking.status),
+                const SizedBox(width: AppSpacing.md),
 
-              // Right column
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title + status pill
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            booking.campaignTitle,
-                            style: AppTextStyles.brandHuge.copyWith(
-                              fontSize: 16,
-                              color: AppColors.textPrimaryOnLight,
-                              height: 1.15,
+                // Right column
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title + status pill
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              booking.campaignTitle,
+                              style: AppTextStyles.brandHuge.copyWith(
+                                fontSize: 16,
+                                color: AppColors.textPrimaryOnLight,
+                                height: 1.15,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        _StatusPill(status: booking.status),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-
-                    // Location · board type
-                    Text(
-                      '${booking.location}  ·  ${booking.boardType}',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondaryOnLight,
-                        height: 1.3,
+                          const SizedBox(width: AppSpacing.sm),
+                          _StatusPill(status: booking.status),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 2),
 
-                    const SizedBox(height: AppSpacing.sm),
+                      // Location · board type
+                      Text(
+                        '${booking.location}  ·  ${booking.boardType}',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textSecondaryOnLight,
+                          height: 1.3,
+                        ),
+                      ),
 
-                    // Duration · date
-                    Row(
-                      children: [
-                        _DaysChip(days: booking.durationDays),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          '·  ${booking.runDateLabel}',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textTertiaryOnLight,
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // Duration · date
+                      Row(
+                        children: [
+                          _DaysChip(days: booking.durationDays),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            '·  ${booking.runDateLabel}',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.textTertiaryOnLight,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: AppSpacing.sm),
-                    const _DashedDivider(),
-                    const SizedBox(height: AppSpacing.sm),
-
-                    // Payment row OR admin note
-                    if (booking.adminNote != null)
-                      _AdminNoteBox(text: booking.adminNote!)
-                    else
-                      _PaymentRow(
-                        method: booking.paymentMethod,
-                        paid: booking.paid,
-                        amount: booking.amount,
+                        ],
                       ),
-                  ],
+
+                      const SizedBox(height: AppSpacing.sm),
+                      const _DashedDivider(),
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // Payment row OR admin note
+                      if (booking.adminNote != null)
+                        _AdminNoteBox(text: booking.adminNote!)
+                      else
+                        _PaymentRow(
+                          method: booking.paymentMethod,
+                          paid: booking.paid,
+                          amount: booking.amount,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -125,11 +122,7 @@ class _StatusIcon extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
       alignment: Alignment.center,
-      child: Icon(
-        status.icon,
-        size: 28,
-        color: Colors.white,
-      ),
+      child: Icon(status.icon, size: 28, color: Colors.white),
     );
   }
 }

@@ -26,7 +26,7 @@ class AppColors {
   static const Color card = Color(0xFF1F1F28);
 
   // ---- Surfaces (light - used on onboarding and any light screens) ----
-  static const Color backgroundLight = Color(0xFFF6F1FB);
+  static const Color backgroundLight = Color(0xFFFFAF6FE);
   static const Color surfaceLight = Color(0xFFEDE4FA);
   static const Color cardLight = Color(0xFFFFFFFF);
   static const Color badgeDark = Color(0xFF1A1A22);
@@ -59,4 +59,15 @@ class AppColors {
   static const Color overlay = Color(0x99000000);
   static const Color shimmerBase = Color(0xFF2A2A33);
   static const Color shimmerHighlight = Color(0xFF3A3A44);
+
+  // ---- Card border gradient ----
+  /// Canonical gradient used by [GradientBorderBox] around every content
+  /// card in the app. Soft lavender → vivid purple → deep purple,
+  /// diagonal direction so the corners have visible variation.
+  static const LinearGradient cardBorderGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFC9A8FF), Color(0xFF7B2FE3), Color(0xFF4A1A9C)],
+    stops: [0.0, 0.5, 1.0],
+  );
 }

@@ -1,8 +1,9 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../../core/widgets/picked_file.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -12,6 +13,7 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/widgets/labeled_form_field.dart';
 import '../../../../core/widgets/outlined_input.dart';
+import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/booking_top_bar.dart';
 import '../widgets/creative_preview.dart';
@@ -29,12 +31,9 @@ class IndividualCampaignScreen extends ConsumerStatefulWidget {
 
 class _IndividualCampaignScreenState
     extends ConsumerState<IndividualCampaignScreen> {
-  final _name = TextEditingController(text: 'Karthik Subramaniam');
-  final _purpose = TextEditingController(text: 'Birthday surprise for Anjali');
-  final _message = TextEditingController(
-    text: 'Happy 30th, Anjali — from Kart, Mom, Dad & the whole gang. '
-        'Look up at 6 PM. 💜',
-  );
+  final _name = TextEditingController();
+  final _purpose = TextEditingController();
+  final _message = TextEditingController();
 
   @override
   void initState() {
@@ -47,6 +46,10 @@ class _IndividualCampaignScreenState
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
     );
+    // Pre-fill the name from the user's profile; leave purpose/message
+    // blank for the user to write their own.
+    final individual = ref.read(userProfileProvider).valueOrNull?.individual;
+    _name.text = individual?.fullName ?? '';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifier = ref.read(bookingProvider.notifier);
       notifier
@@ -65,20 +68,16 @@ class _IndividualCampaignScreenState
     super.dispose();
   }
 
-  Future<void> _pick({required FileType type}) async {
+  Future<void> _pick({required bool isVideo}) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: type == FileType.video
-            ? ['mp4', 'mov']
-            : ['jpg', 'jpeg', 'png'],
-        withData: false,
+      final file = await PickedFile.pick(
+        extensions: isVideo ? ['mp4', 'mov'] : ['jpg', 'jpeg', 'png'],
+        label: isVideo ? 'videos' : 'images',
       );
-      final file = result?.files.firstOrNull;
       if (file == null) return;
       ref
           .read(bookingProvider.notifier)
-          .setCreative(file, isVideo: type == FileType.video);
+          .setCreative(file, isVideo: isVideo);
     } catch (e, st) {
       appLogger.e('File pick failed', error: e, stackTrace: st);
       if (mounted) context.showErrorSnack('Could not open file picker');
@@ -103,9 +102,7 @@ class _IndividualCampaignScreenState
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxl,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -140,9 +137,8 @@ class _IndividualCampaignScreenState
                       label: 'YOUR NAME',
                       child: OutlinedInput(
                         controller: _name,
-                        onChanged: (v) => ref
-                            .read(bookingProvider.notifier)
-                            .setManager(v),
+                        onChanged: (v) =>
+                            ref.read(bookingProvider.notifier).setManager(v),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -151,9 +147,8 @@ class _IndividualCampaignScreenState
                       label: 'PURPOSE',
                       child: OutlinedInput(
                         controller: _purpose,
-                        onChanged: (v) => ref
-                            .read(bookingProvider.notifier)
-                            .setPurpose(v),
+                        onChanged: (v) =>
+                            ref.read(bookingProvider.notifier).setPurpose(v),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -182,8 +177,8 @@ class _IndividualCampaignScreenState
                       file: draft.creativeFile,
                       isVideo: draft.creativeIsVideo,
                       headerLabel: 'Preview  ·  6:00 PM slot',
-                      fallbackTitle: 'Happy 30th, Anjali!',
-                      fallbackSubtitle: '— Love, Karthik & Fam',
+                      fallbackTitle: 'Your message here',
+                      fallbackSubtitle: 'Add a photo or video below',
                       onVideoTooLong: () => context.showErrorSnack(
                         'Video is longer than 20 seconds. Trim it first.',
                       ),
@@ -195,8 +190,8 @@ class _IndividualCampaignScreenState
                           ? 'Replace photo or video'
                           : 'Add photo or video',
                       subtitle: 'JPG / PNG / MP4  ·  max 10MB',
-                      onPickImage: () => _pick(type: FileType.image),
-                      onPickVideo: () => _pick(type: FileType.video),
+                      onPickImage: () => _pick(isVideo: false),
+                      onPickVideo: () => _pick(isVideo: true),
                     ),
 
                     const SizedBox(height: AppSpacing.xxl),
@@ -222,8 +217,7 @@ class _IndividualCampaignScreenState
                     elevation: 0,
                     minimumSize: const Size(double.infinity, 60),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusLg),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     ),
                   ),
                   child: Row(

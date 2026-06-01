@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/widgets/gradient_border_box.dart';
 import '../../domain/billboard_listing.dart';
 
 /// Single billboard listing card on the Local tab.
@@ -18,68 +19,54 @@ class BillboardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: ClipRRect(
+    return GradientBorderBox(
+      borderRadius: AppSpacing.radiusLg,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.08),
-              ),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Hero section
-                Container(
-                  height: 220,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.primaryDark,
-                        Color(0xFF2A1056),
-                      ],
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Billboard illustration centered
-                      Center(
-                        child: _CardBillboard(label: listing.displayLabel),
-                      ),
-
-                      // Status pill (top-right)
-                      Positioned(
-                        top: AppSpacing.md,
-                        right: AppSpacing.md,
-                        child: _StatusPill(
-                          status: listing.availability,
-                          slotsLeft: listing.slotsLeft,
-                        ),
-                      ),
-
-                      // Price chip (bottom-left)
-                      Positioned(
-                        bottom: AppSpacing.md,
-                        left: AppSpacing.md,
-                        child: _PricePill(price: listing.pricePerDay),
-                      ),
-                    ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Hero section
+              Container(
+                height: 220,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.primaryDark, Color(0xFF2A1056)],
                   ),
                 ),
+                child: Stack(
+                  children: [
+                    // Billboard illustration centered
+                    Center(child: _CardBillboard(label: listing.displayLabel)),
 
-                // Footer — title, address, views, CTA
-                _CardFooter(listing: listing, onBook: onTap),
-              ],
-            ),
+                    // Status pill (top-right)
+                    Positioned(
+                      top: AppSpacing.md,
+                      right: AppSpacing.md,
+                      child: _StatusPill(
+                        status: listing.availability,
+                        slotsLeft: listing.slotsLeft,
+                      ),
+                    ),
+
+                    // Price chip (bottom-left)
+                    Positioned(
+                      bottom: AppSpacing.md,
+                      left: AppSpacing.md,
+                      child: _PricePill(price: listing.pricePerDay),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Footer — title, address, views, CTA
+              _CardFooter(listing: listing, onBook: onTap),
+            ],
           ),
         ),
       ),
@@ -110,10 +97,7 @@ class _CardBillboard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: AppColors.primary,
-                  width: 2.5,
-                ),
+                border: Border.all(color: AppColors.primary, width: 2.5),
               ),
               alignment: Alignment.center,
               child: Column(
@@ -210,10 +194,7 @@ class _StatusPill extends StatelessWidget {
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: dotColor,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
           Text(
@@ -355,14 +336,14 @@ class _CardFooter extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.textPrimary,
-                disabledBackgroundColor:
-                    AppColors.primary.withValues(alpha: 0.18),
-                disabledForegroundColor:
-                    AppColors.textPrimaryOnLight.withValues(alpha: 0.55),
+                disabledBackgroundColor: AppColors.primary.withValues(
+                  alpha: 0.18,
+                ),
+                disabledForegroundColor: AppColors.textPrimaryOnLight
+                    .withValues(alpha: 0.55),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.radiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 ),
               ),
               child: Row(

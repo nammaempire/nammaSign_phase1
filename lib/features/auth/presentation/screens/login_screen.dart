@@ -8,6 +8,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/errors/exceptions.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/brand_logo.dart';
@@ -54,6 +55,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     final phone = '$_dialCode${_phoneCtrl.text.replaceAll(" ", "")}';
     await ref.read(otpFlowProvider.notifier).sendOtp(phone);
+  }
+
+  Future<void> _onGoogleSignIn() async {
+    try {
+      await ref.read(authRepositoryProvider).signInWithGoogle();
+      // Router auto-redirects to /home once authStateProvider emits the user.
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      if (e.code == 'cancelled') return; // User dismissed the picker — silent.
+      context.showErrorSnack(e.message);
+    } catch (e) {
+      if (!mounted) return;
+      context.showErrorSnack('Could not sign in with Google. Try again.');
+    }
   }
 
   @override
@@ -170,8 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   leading: _GoogleGlyph(),
                   background: Colors.white,
                   foreground: AppColors.textPrimaryOnLight,
-                  onTap: () =>
-                      context.showSnack('Google sign-in coming in Phase 1b'),
+                  onTap: _onGoogleSignIn,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _SocialButton(
@@ -188,32 +202,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: AppSpacing.xxl),
 
-                // Create account link
+                // First-time helper. Setup now happens automatically right
+                // after sign-in — new users get routed into the account
+                // type picker + signup form before reaching /home.
                 Center(
-                  child: Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(
-                        'New to ${AppConstants.appName}? ',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondaryOnLight,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => context.push(
-                          '${AppRoutes.accountType}'
-                          '?${AppRoutes.accountTypeModeParam}='
-                          '${AppRoutes.accountTypeModeSignup}',
-                        ),
-                        child: Text(
-                          'Create an account',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'New to ${AppConstants.appName}? '
+                    "We'll set up your account after sign-in.",
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textTertiaryOnLight,
+                    ),
                   ),
                 ),
               ],

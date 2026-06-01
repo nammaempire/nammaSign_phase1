@@ -1,17 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../shared/providers/firebase_providers.dart';
 import '../../data/repositories/fake_auth_repository.dart';
+import '../../data/repositories/firebase_auth_repository.dart';
 import '../../domain/entities/app_user.dart';
 import '../../domain/repositories/auth_repository.dart';
 
-/// Concrete repository.
+/// Set to `true` to use the in-memory [FakeAuthRepository] (UI dev mode —
+/// any 6-digit OTP works, no network calls). Set to `false` for the real
+/// Firebase Auth backed implementation.
 ///
-/// Phase 1a: uses [FakeAuthRepository] (in-memory, no backend).
-/// Phase 1b: swap to FirebaseAuthRepository — only this line changes.
+/// Production / staging builds must keep this false. We leave the toggle
+/// in place so widget tests + early UI iteration don't require Firebase
+/// to be initialised.
+const bool _useFakeAuth = false;
+
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final repo = FakeAuthRepository();
-  ref.onDispose(repo.dispose);
-  return repo;
+  if (_useFakeAuth) {
+    final repo = FakeAuthRepository();
+    ref.onDispose(repo.dispose);
+    return repo;
+  }
+
+  return FirebaseAuthRepository(
+    firebaseAuth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+  );
 });
 
 /// Reactive stream of the currently signed-in user (or null).

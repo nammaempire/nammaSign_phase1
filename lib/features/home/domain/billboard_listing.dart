@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 /// Availability state shown as a pill in the top-right of a billboard card.
 enum AvailabilityStatus {
   available,
@@ -5,10 +7,21 @@ enum AvailabilityStatus {
   fullyBooked,
 }
 
-/// A single billboard / digital board listing surfaced on the Local home tab.
+extension AvailabilityStatusX on AvailabilityStatus {
+  String get storageValue => name;
+  static AvailabilityStatus fromStorage(String? raw) {
+    return AvailabilityStatus.values.firstWhere(
+      (e) => e.storageValue == raw,
+      orElse: () => AvailabilityStatus.available,
+    );
+  }
+}
+
+/// A single AREA listing the customer can book.
 ///
-/// Phase 1a: built from in-memory sample data.
-/// Phase 1b: hydrated from Firestore `items` collection.
+/// Each area maps to N physical Android signage boards (4 per area in
+/// Phase 1). The customer picks the area; the scheduler distributes the
+/// approved creative across all boards in that area's rotation.
 class BillboardListing {
   const BillboardListing({
     required this.id,
@@ -19,68 +32,97 @@ class BillboardListing {
     required this.pricePerDay,
     required this.viewsPerDay,
     required this.availability,
+    required this.boardCount,
     this.slotsLeft = 0,
   });
 
   final String id;
-  final String location; // e.g. "100 Feet Road"
-  final String boardType; // e.g. "LED Hoarding"
-  final String displayLabel; // e.g. "YOUR AD" / "FORUM MALL"
-  /// Multi-line street address. Use `\n` to force a line break for nicer
-  /// formatting; otherwise the card wraps to max 2 lines naturally.
+  final String location;
+  final String boardType;
+  final String displayLabel;
   final String fullAddress;
   final int pricePerDay;
   final int viewsPerDay;
   final AvailabilityStatus availability;
-  final int slotsLeft; // only meaningful when availability == fewLeft
+  final int boardCount;
+  final int slotsLeft;
+
+  /// Builds from a Firestore `areas/{id}` document.
+  factory BillboardListing.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snap,
+  ) {
+    final d = snap.data() ?? const <String, dynamic>{};
+    return BillboardListing(
+      id: snap.id,
+      location: (d['name'] as String?) ?? snap.id,
+      boardType:
+          '${(d['boardCount'] as num?)?.toInt() ?? 4} LED Boards',
+      displayLabel: (d['displayLabel'] as String?) ?? 'YOUR AD',
+      fullAddress: (d['description'] as String?) ?? '',
+      pricePerDay: (d['pricePerDay'] as num?)?.toInt() ?? 500,
+      viewsPerDay: (d['estimatedViewsPerDay'] as num?)?.toInt() ?? 0,
+      availability: AvailabilityStatusX.fromStorage(d['availability'] as String?),
+      boardCount: (d['boardCount'] as num?)?.toInt() ?? 4,
+      slotsLeft: (d['slotsLeft'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  /// For the seed script / admin tools.
+  Map<String, dynamic> toFirestore() => {
+        'name': location,
+        'city': 'Bengaluru',
+        'description': fullAddress,
+        'boardCount': boardCount,
+        'pricePerDay': pricePerDay,
+        'maxAdsInRotation': 30,
+        'estimatedViewsPerDay': viewsPerDay,
+        'displayLabel': displayLabel,
+        'availability': availability.storageValue,
+        'slotsLeft': slotsLeft,
+        'status': 'active',
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
 }
 
-/// Hardcoded sample data for the UI-only phase. Replace with a Firestore
-/// stream in Phase 1b.
+/// Fallback sample data — used when the listingsStreamProvider hasn't
+/// emitted yet, or in widget tests. Real production data comes from
+/// Firestore via [listingsStreamProvider].
 const List<BillboardListing> sampleListings = [
   BillboardListing(
-    id: '1',
-    location: '100 Feet Road',
-    boardType: 'LED Hoarding',
-    displayLabel: 'YOUR AD',
-    fullAddress: 'Opp. Forum Mall, 100 Feet Road,\n'
-        'Koramangala, Bengaluru 560095',
-    pricePerDay: 450,
-    viewsPerDay: 12000,
-    availability: AvailabilityStatus.available,
-  ),
-  BillboardListing(
-    id: '2',
-    location: 'Forum Mall',
-    boardType: 'Atrium Screen',
-    displayLabel: 'FORUM MALL',
-    fullAddress: 'Forum Mall, Hosur Road,\n'
-        'Koramangala, Bengaluru 560029',
-    pricePerDay: 780,
-    viewsPerDay: 18500,
-    availability: AvailabilityStatus.fewLeft,
-    slotsLeft: 2,
-  ),
-  BillboardListing(
-    id: '3',
-    location: 'MG Road',
-    boardType: 'Digital Tower',
-    displayLabel: 'YOUR AD',
-    fullAddress: 'Near Trinity Metro Station,\n'
-        'MG Road, Bengaluru 560001',
-    pricePerDay: 620,
-    viewsPerDay: 22000,
-    availability: AvailabilityStatus.available,
-  ),
-  BillboardListing(
-    id: '4',
+    id: 'koramangala',
     location: 'Koramangala',
-    boardType: 'Bus Stop LED',
+    boardType: '4 LED Boards',
     displayLabel: 'YOUR AD',
-    fullAddress: '80 Feet Road, 5th Block,\n'
-        'Koramangala, Bengaluru 560034',
-    pricePerDay: 320,
-    viewsPerDay: 8500,
-    availability: AvailabilityStatus.fullyBooked,
+    fullAddress: 'Forum Mall, 100 Feet Road, 5th Block,\n'
+        '80 Feet Road  ·  Koramangala, Bengaluru',
+    pricePerDay: 650,
+    viewsPerDay: 48000,
+    availability: AvailabilityStatus.available,
+    boardCount: 4,
+  ),
+  BillboardListing(
+    id: 'madiwala',
+    location: 'Madiwala',
+    boardType: '4 LED Boards',
+    displayLabel: 'YOUR AD',
+    fullAddress: 'BTM Layout, Madiwala Market,\n'
+        'Hosur Road  ·  Madiwala, Bengaluru',
+    pricePerDay: 450,
+    viewsPerDay: 36000,
+    availability: AvailabilityStatus.fewLeft,
+    slotsLeft: 4,
+    boardCount: 4,
+  ),
+  BillboardListing(
+    id: 'electronic-city',
+    location: 'Electronic City',
+    boardType: '4 LED Boards',
+    displayLabel: 'YOUR AD',
+    fullAddress: 'Phase 1 & 2, Hosur Road,\n'
+        'Tech Park hubs  ·  Electronic City, Bengaluru',
+    pricePerDay: 550,
+    viewsPerDay: 42000,
+    availability: AvailabilityStatus.available,
+    boardCount: 4,
   ),
 ];

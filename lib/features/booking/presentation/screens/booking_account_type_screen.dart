@@ -7,7 +7,7 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
-import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/widgets/gradient_border_box.dart';
 import '../../../account_type/domain/account_type.dart';
 import '../../../home/domain/billboard_listing.dart';
 import '../providers/booking_provider.dart';
@@ -211,19 +211,11 @@ class _TypeCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: GradientBorderBox(
+          borderRadius: AppSpacing.radiusLg,
+          borderWidth: selected ? 1.8 : 1.0,
+          innerColor: selected ? AppColors.surfaceLight : Colors.white,
           padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.surfaceLight : Colors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(
-              color: selected
-                  ? AppColors.primary
-                  : AppColors.primary.withValues(alpha: 0.12),
-              width: selected ? 2 : 1,
-            ),
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

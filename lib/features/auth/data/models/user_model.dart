@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+
 import '../../domain/entities/app_user.dart';
 
-/// Data-layer model. Pure Dart for now (no Firebase imports).
-/// When Firebase comes back in Phase 1b, add `fromFirebaseUser` and
-/// `fromFirestore` factories alongside the existing JSON ones.
+/// Data-layer model. Bridges the pure-Dart [AppUser] entity to Firebase
+/// SDK types (Firebase Auth user + Firestore doc).
 class UserModel extends AppUser {
   const UserModel({
     required super.id,
@@ -13,6 +15,35 @@ class UserModel extends AppUser {
     super.createdAt,
   });
 
+  /// Build from a freshly-authenticated Firebase Auth user. Useful right
+  /// after sign-in before the Firestore profile has been read.
+  factory UserModel.fromFirebaseUser(fb.User user) {
+    return UserModel(
+      id: user.uid,
+      phone: user.phoneNumber,
+      email: user.email,
+      displayName: user.displayName,
+      photoUrl: user.photoURL,
+      createdAt: user.metadata.creationTime,
+    );
+  }
+
+  /// Build from the `users/{uid}` Firestore document.
+  factory UserModel.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snap,
+  ) {
+    final data = snap.data() ?? const <String, dynamic>{};
+    return UserModel(
+      id: snap.id,
+      phone: data['phone'] as String?,
+      email: data['email'] as String?,
+      displayName: data['displayName'] as String?,
+      photoUrl: data['photoUrl'] as String?,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+    );
+  }
+
+  /// Pure JSON serialization (no Firebase imports).
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as String,
@@ -34,4 +65,24 @@ class UserModel extends AppUser {
         'photoUrl': photoUrl,
         'createdAt': createdAt?.toIso8601String(),
       };
+
+  /// Write the user document on first sign-in. The `onUserCreate` Cloud
+  /// Function handles this server-side too, but we write client-side as
+  /// well in case the function trigger is delayed.
+  Map<String, dynamic> toFirestore() {
+    return {
+      'uid': id,
+      'phone': phone,
+      'email': email,
+      'displayName': displayName,
+      'photoUrl': photoUrl,
+      'accountType': null,
+      'kycStatus': 'none',
+      'fcmTokens': <String>[],
+      'createdAt': createdAt != null
+          ? Timestamp.fromDate(createdAt!)
+          : FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+  }
 }

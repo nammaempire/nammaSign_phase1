@@ -35,10 +35,17 @@ class FirestoreCollections {
   FirestoreCollections._();
 
   static const String users = 'users';
-  static const String items = 'items';
-  static const String categories = 'categories';
-  static const String favorites = 'favorites';
-  static const String orders = 'orders';
+  static const String areas = 'areas';        // 3 area listings
+  static const String devices = 'devices';    // 12 signage boards
+  static const String bookings = 'bookings';
+  static const String payments = 'payments';
+  static const String waitlist = 'waitlist';
+  static const String config = 'config';
+
+  // Subcollections (used relative to parent)
+  static const String notifications = 'notifications';
+  static const String kycDocs = 'kycDocs';
+  static const String scheduleItems = 'scheduleItems';
 }
 
 /// SharedPreferences keys.

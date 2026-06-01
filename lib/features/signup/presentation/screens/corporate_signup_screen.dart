@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,9 +8,13 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/widgets/file_upload_slot.dart';
+import '../../../../core/widgets/picked_file.dart';
 import '../../../../core/widgets/labeled_form_field.dart';
 import '../../../../core/widgets/outlined_input.dart';
 import '../../../../core/widgets/uploaded_file_card.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../user/domain/user_profile.dart';
+import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../widgets/signup_scaffold.dart';
 
 /// "Tell us about your company." — corporate account signup form.
@@ -32,8 +35,8 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
   final _email = TextEditingController();
   final _phone = TextEditingController();
 
-  PlatformFile? _panCinFile;
-  PlatformFile? _additionalFile;
+  PickedFile? _panCinFile;
+  PickedFile? _additionalFile;
 
   @override
   void dispose() {
@@ -54,14 +57,9 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
     if (file != null) setState(() => _additionalFile = file);
   }
 
-  Future<PlatformFile?> _pickFile({required List<String> allowed}) async {
+  Future<PickedFile?> _pickFile({required List<String> allowed}) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: allowed,
-        withData: false,
-      );
-      return result?.files.firstOrNull;
+      return await PickedFile.pick(extensions: allowed, label: 'documents');
     } catch (e, st) {
       appLogger.e('File pick failed', error: e, stackTrace: st);
       if (mounted) context.showErrorSnack('Could not open file picker');
@@ -69,9 +67,54 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
     }
   }
 
-  void _onContinue() {
-    context.showSnack('Account created (demo). Sign in to continue.');
-    context.go(AppRoutes.login);
+  Future<void> _onContinue() async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      context.go(AppRoutes.login);
+      return;
+    }
+    // The company name is what flips isSetupComplete=true in the
+    // user-profile gate. If it's empty the router would keep them
+    // stuck here forever.
+    if (_company.text.trim().isEmpty) {
+      context.showErrorSnack('Enter your company name to continue');
+      return;
+    }
+    try {
+      final repo = ref.read(userProfileRepositoryProvider);
+      await repo.saveCorporate(
+        user.id,
+        CorporateProfile(
+          name: _company.text.trim(),
+          panCin: _pan.text.trim(),
+          officialEmail: _email.text.trim(),
+          // Manager name isn't collected on this form (only the
+          // phone is). Default to empty; user can edit via the
+          // Personal Info screen later (Phase 1c).
+          managerName: '',
+          managerPhone: _phone.text.trim(),
+        ),
+      );
+      // Best-effort KYC upload — non-fatal so a flaky upload doesn't trap
+      // the user on the signup screen. They can re-upload later.
+      try {
+        await repo.uploadKycDocs(user.id, {
+          if (_panCinFile != null) 'panCin': _panCinFile!,
+          if (_additionalFile != null) 'additional': _additionalFile!,
+        });
+      } catch (e, st) {
+        appLogger.w('KYC upload failed', error: e, stackTrace: st);
+        if (mounted) {
+          context.showSnack('Profile saved. Document upload will retry later.');
+        }
+      }
+      if (!mounted) return;
+      // Router redirect sees isSetupComplete=true and bounces to /home.
+      context.go(AppRoutes.home);
+    } catch (e) {
+      if (!mounted) return;
+      context.showErrorSnack('Could not save profile: $e');
+    }
   }
 
   @override
@@ -88,7 +131,7 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
             label: 'COMPANY NAME',
             child: OutlinedInput(
               controller: _company,
-              hint: 'Brigade Enterprises Ltd.',
+              hint: 'e.g. Acme Pvt. Ltd.',
             ),
           ),
           const SizedBox(height: AppSpacing.xl),

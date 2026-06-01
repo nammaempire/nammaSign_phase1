@@ -44,14 +44,20 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
     );
   }
 
-  Future<void> _pay({required bool simulateFailure}) async {
+  Future<void> _submit() async {
     setState(() => _processing = true);
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _processing = false);
-    context.push(
-      simulateFailure ? AppRoutes.bookingFailure : AppRoutes.bookingSuccess,
-    );
+    try {
+      await ref
+          .read(bookingProvider.notifier)
+          .submit(paymentMethod: _method.label);
+      if (!mounted) return;
+      setState(() => _processing = false);
+      context.push(AppRoutes.bookingSuccess);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _processing = false);
+      context.showErrorSnack('Could not submit booking. Please try again.');
+    }
   }
 
   @override
@@ -113,8 +119,8 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      "Verify everything below. You'll be charged after "
-                      'admin approval.',
+                      'Verify everything below, then submit your campaign '
+                      'for review. Our team will reach out about payment.',
                       style: AppTextStyles.bodyLarge.copyWith(
                         color: AppColors.textSecondaryOnLight,
                       ),
@@ -147,8 +153,8 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
 
                     PaymentMethodCard(
                       icon: Icons.account_balance_wallet_outlined,
-                      title: 'UPI · GPay',
-                      subtitle: 'priya@oksbi',
+                      title: 'UPI',
+                      subtitle: 'Pay using any UPI app',
                       selected: _method == PaymentMethod.upi,
                       onTap: () =>
                           setState(() => _method = PaymentMethod.upi),
@@ -156,20 +162,11 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                     const SizedBox(height: AppSpacing.md),
                     PaymentMethodCard(
                       icon: Icons.credit_card_rounded,
-                      title: 'Card · HDFC ·· 4821',
-                      subtitle: 'VISA · EXP 11/27',
+                      title: 'Card',
+                      subtitle: 'Visa, Mastercard, RuPay',
                       selected: _method == PaymentMethod.card,
                       onTap: () =>
                           setState(() => _method = PaymentMethod.card),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    PaymentMethodCard(
-                      icon: Icons.account_balance_outlined,
-                      title: 'Net banking',
-                      subtitle: 'All major banks',
-                      selected: _method == PaymentMethod.netbanking,
-                      onTap: () =>
-                          setState(() => _method = PaymentMethod.netbanking),
                     ),
 
                     const SizedBox(height: AppSpacing.xxl),
@@ -188,14 +185,8 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
               ),
               child: SizedBox(
                 width: double.infinity,
-                child: GestureDetector(
-                  onLongPress: _processing
-                      ? null
-                      : () => _pay(simulateFailure: true),
-                  child: ElevatedButton(
-                    onPressed: _processing
-                        ? null
-                        : () => _pay(simulateFailure: false),
+                child: ElevatedButton(
+                    onPressed: _processing ? null : _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.textPrimary,
@@ -220,7 +211,7 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Pay ₹${formatRupees(totals.total)} securely',
+                                'Submit for review',
                                 style: AppTextStyles.labelLarge.copyWith(
                                   color: AppColors.textPrimary,
                                   fontSize: 17,
@@ -228,13 +219,12 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                               ),
                               const SizedBox(width: AppSpacing.sm),
                               const Icon(
-                                Icons.lock_outline_rounded,
+                                Icons.arrow_forward_rounded,
                                 size: 18,
                                 color: AppColors.textPrimary,
                               ),
                             ],
                           ),
-                  ),
                 ),
               ),
             ),

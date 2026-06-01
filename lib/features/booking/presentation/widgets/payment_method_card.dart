@@ -3,8 +3,18 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/widgets/gradient_border_box.dart';
 
-enum PaymentMethod { upi, card, netbanking }
+enum PaymentMethod {
+  upi,
+  card;
+
+  /// Label persisted on the booking document.
+  String get label => switch (this) {
+        PaymentMethod.upi => 'UPI',
+        PaymentMethod.card => 'Card',
+      };
+}
 
 /// One radio-selectable payment method row.
 class PaymentMethodCard extends StatelessWidget {
@@ -30,19 +40,11 @@ class PaymentMethodCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+        child: GradientBorderBox(
+          borderRadius: AppSpacing.radiusMd,
+          borderWidth: selected ? 1.6 : 1.0,
+          innerColor: selected ? AppColors.surfaceLight : Colors.white,
           padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.surfaceLight : Colors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            border: Border.all(
-              color: selected
-                  ? AppColors.primary
-                  : AppColors.primary.withValues(alpha: 0.12),
-              width: selected ? 1.5 : 1,
-            ),
-          ),
           child: Row(
             children: [
               Container(

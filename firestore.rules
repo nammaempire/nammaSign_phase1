@@ -1,0 +1,122 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // ---- USERS ----
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isOwner(uid) || isAdmin();
+      // Allow admins to list users (for the admin Users screen).
+      allow list: if isAdmin();
+
+      match /notifications/{notifId} {
+        allow read, update: if isOwner(uid);
+        allow create, delete: if isAdmin();
+      }
+      match /kycDocs/{docId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow create: if isOwner(uid);
+        allow update: if isAdmin();  // only admin verifies/rejects
+      }
+    }
+
+    // ---- AREAS (publicly readable so we don't gate the marketing page later) ----
+    match /areas/{areaId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- DEVICES ----
+    match /devices/{deviceId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+      match /scheduleItems/{itemId} {
+        allow read: if isSignedIn();
+        allow write: if false;       // only Cloud Functions write here
+      }
+    }
+
+    // ---- BOOKINGS ----
+    // Users create + edit their own drafts. Once status leaves draft, the
+    // booking becomes server-controlled (Cloud Functions handle transitions).
+    match /bookings/{bookingId} {
+      // Get a single booking: owner or admin.
+      allow get: if isSignedIn() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+
+      // List/query bookings:
+      //   - Admins: any query (used by the admin queue).
+      //   - Users:  must filter the query by their own userId.
+      allow list: if isAdmin() ||
+        (isSignedIn() &&
+          resource.data.userId == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status in ['draft', 'pending_payment', 'pending_review'];
+
+      allow update: if isSignedIn() &&
+        resource.data.userId == request.auth.uid &&
+        resource.data.status in ['draft', 'pending_payment'] &&
+        request.resource.data.status in ['draft', 'pending_payment', 'cancelled'];
+
+      // Owner may cancel a booking that's still awaiting admin review.
+      // The only permitted change from pending_review is → cancelled.
+      allow update: if isSignedIn() &&
+        resource.data.userId == request.auth.uid &&
+        resource.data.status == 'pending_review' &&
+        request.resource.data.status == 'cancelled' &&
+        request.resource.data.userId == request.auth.uid;
+
+      // Admin can move bookings through their full lifecycle.
+      allow update: if isAdmin();
+
+      // No client deletes.
+    }
+
+    // ---- PAYMENTS ----
+    // Users read their own. Only Cloud Functions write.
+    match /payments/{paymentId} {
+      allow read: if isSignedIn() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // ---- WAITLIST (premium notify-me) ----
+    match /waitlist/{id} {
+      allow create: if true;
+      allow read: if isAdmin();
+    }
+
+    // ---- CONFIG ----
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- ADMIN ----
+    // Roster of admin user ids — presence of a doc here grants admin rights
+    // (see isAdmin() above). Bootstrap by creating the first doc via the
+    // Firebase Console; after that admins can manage each other.
+    //
+    // Note: any signed-in user may read THEIR OWN admin doc so the client
+    // can check whether they're an admin. (Otherwise the gate has a
+    // chicken-and-egg: you'd need admin rights to check if you're admin.)
+    match /admins/{uid} {
+      allow read: if request.auth != null &&
+        (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();
+    }
+    // Generic admin-only namespace for future admin configs/data.
+    match /admin/{path=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

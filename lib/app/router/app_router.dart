@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/utils/logger.dart';
+import '../../features/auth/domain/entities/app_user.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/providers/splash_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -17,15 +19,16 @@ import '../../features/booking/presentation/screens/payment_failure_screen.dart'
 import '../../features/booking/presentation/screens/payment_success_screen.dart';
 import '../../features/booking/presentation/screens/review_pay_screen.dart';
 import '../../features/campaign/presentation/screens/campaign_status_screen.dart';
-import '../../features/history/domain/booking.dart';
 import '../../features/history/presentation/screens/history_screen.dart';
-import '../../features/home/domain/billboard_listing.dart';
+import '../../features/home/presentation/providers/listings_provider.dart';
 import '../../features/signup/presentation/screens/corporate_signup_screen.dart';
 import '../../features/signup/presentation/screens/individual_signup_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/main_shell.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
+import '../../features/profile/presentation/screens/personal_info_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/user/presentation/providers/user_profile_provider.dart';
 import '../../shared/providers/app_prefs_provider.dart';
 import 'app_routes.dart';
 
@@ -41,6 +44,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final splashDone = ref.read(splashCompleteProvider);
       final loc = state.matchedLocation;
 
+      // TEMP diagnostic — remove once splash navigation is confirmed.
+      appLogger.d(
+        'REDIRECT loc=$loc authLoading=${auth.isLoading} '
+        'authErr=${auth.hasError} signedIn=${auth.asData?.value != null} '
+        'prefsReady=$prefsReady splashDone=$splashDone',
+      );
+
       // Still resolving auth/prefs OR the 3-second splash animation isn't
       // finished yet — hold on the splash screen.
       if (auth.isLoading || !prefsReady || !splashDone) {
@@ -49,23 +59,50 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final seenOnboarding = ref.read(onboardingSeenProvider);
       final signedIn = auth.asData?.value != null;
-      final atAuthRoute = loc == AppRoutes.login ||
-          loc == AppRoutes.otp ||
-          loc.startsWith('/signup');
-      final atOnboarding = loc == AppRoutes.onboarding ||
-          loc == AppRoutes.accountType;
+      final atAuthRoute =
+          loc == AppRoutes.login || loc == AppRoutes.otp;
+      final atSetupRoute =
+          loc == AppRoutes.accountType || loc.startsWith('/signup');
+      final atOnboardingRoute = loc == AppRoutes.onboarding;
 
-      // Not signed in
+      // ---- Not signed in ----
       if (!signedIn) {
-        if (!seenOnboarding && !atOnboarding) return AppRoutes.onboarding;
-        if (seenOnboarding && !atAuthRoute && !atOnboarding) {
+        // First-launch users see onboarding before login.
+        if (!seenOnboarding && !atOnboardingRoute) {
+          return AppRoutes.onboarding;
+        }
+        if (seenOnboarding && !atAuthRoute && !atOnboardingRoute) {
           return AppRoutes.login;
         }
         return null;
       }
 
-      // Signed in but on auth/onboarding/splash — go home.
-      if (atAuthRoute || atOnboarding || loc == AppRoutes.splash) {
+      // ---- Signed in ----
+      // Wait for the user's Firestore profile to load before deciding
+      // whether they're returning or need first-time setup.
+      final profileAsync = ref.read(userProfileProvider);
+      if (profileAsync.isLoading) {
+        return loc == AppRoutes.splash ? null : AppRoutes.splash;
+      }
+      final profile = profileAsync.asData?.value;
+      final isSetupComplete = profile?.isSetupComplete ?? false;
+
+      // First-time user — force them through the setup flow until they
+      // complete the corporate/individual form. Once isSetupComplete
+      // flips true, the next redirect carries them on to /home.
+      if (!isSetupComplete) {
+        if (atSetupRoute) return null; // already in setup
+        return '${AppRoutes.accountType}'
+            '?${AppRoutes.accountTypeModeParam}='
+            '${AppRoutes.accountTypeModeSignup}';
+      }
+
+      // Returning user with profile complete — bounce them off any
+      // pre-auth or setup screen → /home.
+      if (atAuthRoute ||
+          atOnboardingRoute ||
+          atSetupRoute ||
+          loc == AppRoutes.splash) {
         return AppRoutes.home;
       }
       return null;
@@ -103,14 +140,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Booking flow (only reachable when signed in)
       GoRoute(
         path: AppRoutes.bookingSelectType,
-        builder: (_, state) {
-          final id = state.uri.queryParameters['listingId'];
-          final listing = sampleListings.firstWhere(
-            (l) => l.id == id,
-            orElse: () => sampleListings.first,
-          );
-          return BookingAccountTypeScreen(listing: listing);
-        },
+        builder: (_, state) => _BookingListingResolver(
+          listingId: state.uri.queryParameters['listingId'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.bookingCorporate,
@@ -135,13 +167,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.campaignStatus,
         builder: (_, state) {
-          final id = state.pathParameters['bookingId'];
-          final booking = sampleBookings.firstWhere(
-            (b) => b.id == id,
-            orElse: () => sampleBookings.first,
-          );
-          return CampaignStatusScreen(booking: booking);
+          final id = state.pathParameters['bookingId']!;
+          return CampaignStatusScreen(bookingId: id);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.personalInfo,
+        builder: (_, __) => const PersonalInfoScreen(),
       ),
 
       StatefulShellRoute.indexedStack(
@@ -193,6 +225,21 @@ final routerProvider = Provider<GoRouter>((ref) {
     if (next) router.refresh();
   });
 
+  // Refresh whenever the Firebase auth state changes. Listening to the
+  // StreamProvider (not the underlying stream) guarantees the provider
+  // value is already updated by the time we re-evaluate the redirect —
+  // refreshListenable on the raw stream can fire in a different order.
+  ref.listen<AsyncValue<AppUser?>>(authStateProvider, (prev, next) {
+    router.refresh();
+  });
+
+  // Refresh when the Firestore profile updates — fires when (a) the
+  // profile loads after sign-in and (b) the user completes signup so
+  // isSetupComplete flips and the redirect carries them to /home.
+  ref.listen(userProfileProvider, (prev, next) {
+    router.refresh();
+  });
+
   return router;
 });
 
@@ -207,5 +254,84 @@ class _StreamListenable extends ChangeNotifier {
   void dispose() {
     _sub.cancel();
     super.dispose();
+  }
+}
+
+/// Resolves the listing id from the booking deep-link against the live
+/// Firestore listings. On a missing / unknown id it shows a clear
+/// "board unavailable" screen instead of silently booking a random board.
+class _BookingListingResolver extends ConsumerWidget {
+  const _BookingListingResolver({required this.listingId});
+
+  final String? listingId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = listingId;
+    if (id == null || id.isEmpty) {
+      return const _BookingListingUnavailable();
+    }
+    final async = ref.watch(listingByIdProvider(id));
+    return async.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, __) => const _BookingListingUnavailable(),
+      data: (listing) => listing == null
+          ? const _BookingListingUnavailable()
+          : BookingAccountTypeScreen(listing: listing),
+    );
+  }
+}
+
+class _BookingListingUnavailable extends StatelessWidget {
+  const _BookingListingUnavailable();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.location_off_outlined,
+                  size: 48,
+                  color: Color(0xFF6E6E7C),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Board unavailable',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1A22),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "This board isn't available right now. It may have been "
+                  'removed or is no longer active.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                    color: Color(0xFF6E6E7C),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: () => context.go(AppRoutes.home),
+                  child: const Text('Back to boards'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

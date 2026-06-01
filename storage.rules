@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    // Personal files (avatar, KYC docs)
+    match /users/{uid}/{path=**} {
+      allow read: if isOwner(uid);
+      allow write: if isOwner(uid) && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // Creative uploads — written by signed-in user, publicly readable
+    // (the URL itself is unguessable, and player devices need to fetch
+    // these without auth).
+    match /bookings/{uid}/{path=**} {
+      allow read: if true;
+      allow write: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.size < 50 * 1024 * 1024;
+    }
+
+    // Server-generated invoices, scoped per user so a signed-in user can
+    // only read their own. Cloud Functions write to invoices/{uid}/{bookingId}/...
+    match /invoices/{uid}/{path=**} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+  }
+}

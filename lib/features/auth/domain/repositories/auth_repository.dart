@@ -30,5 +30,11 @@ abstract class AuthRepository {
     required String password,
   });
 
+  /// Google Sign-In. Opens the platform Google account picker, exchanges
+  /// the resulting idToken for a Firebase credential, and returns the
+  /// signed-in user. Throws [AuthException] with code `'cancelled'` if
+  /// the user dismisses the picker.
+  Future<AppUser> signInWithGoogle();
+
   Future<void> signOut();
 }

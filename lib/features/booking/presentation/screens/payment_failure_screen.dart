@@ -8,6 +8,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/widgets/gradient_border_box.dart';
 
 /// Soft-pink failure screen shown when payment fails. The booking slot is
 /// held for 15 minutes so the user can retry.
@@ -162,15 +163,9 @@ class _PaymentFailureScreenState
               const SizedBox(height: AppSpacing.md),
 
               // Slot reserved info
-              Container(
+              GradientBorderBox(
+                borderRadius: AppSpacing.radiusMd,
                 padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                  ),
-                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

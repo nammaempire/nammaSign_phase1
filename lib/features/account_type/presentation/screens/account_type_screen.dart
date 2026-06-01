@@ -7,8 +7,10 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../shared/providers/app_prefs_provider.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/widgets/gradient_border_box.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../../domain/account_type.dart';
 import '../providers/account_type_provider.dart';
 
@@ -38,32 +40,34 @@ class _AccountTypeScreenState extends ConsumerState<AccountTypeScreen> {
 
   Future<void> _onContinue() async {
     final type = ref.read(selectedAccountTypeProvider);
-    final mode = GoRouterState.of(context).uri.queryParameters[
-            AppRoutes.accountTypeModeParam] ??
-        AppRoutes.accountTypeModeOnboarding;
+    final user = ref.read(currentUserProvider);
 
-    // Persist the chosen type + (idempotently) mark onboarding complete.
-    // markComplete updates both prefs AND the in-memory notifier so the
-    // router redirect sees the new state for the next navigation.
-    await ref.read(onboardingSeenProvider.notifier).markComplete(
-          accountType: type.storageValue,
-        );
-    if (!mounted) return;
-
-    // Branch on entry mode.
-    //
-    // Signup flow: PUSH so back goes signup → account-type → login.
-    // Onboarding flow: GO so login replaces the stack (no back to
-    // onboarding once you're past it).
-    if (mode == AppRoutes.accountTypeModeSignup) {
-      context.push(
-        type == AccountType.corporate
-            ? AppRoutes.signupCorporate
-            : AppRoutes.signupIndividual,
-      );
-    } else {
+    if (user == null) {
+      // Defensive — shouldn't happen because router gates here only
+      // after sign-in. Bounce back to login if it does.
       context.go(AppRoutes.login);
+      return;
     }
+
+    // Persist accountType to Firestore. The signup form (next screen)
+    // will fill in the rest of the profile fields and finalize setup.
+    try {
+      await ref
+          .read(userProfileRepositoryProvider)
+          .setAccountType(user.id, type);
+    } catch (e) {
+      if (!mounted) return;
+      context.showErrorSnack('Could not save account type: $e');
+      return;
+    }
+
+    if (!mounted) return;
+    // Push to the signup form. Back navigation: signup → account-type.
+    context.push(
+      type == AccountType.corporate
+          ? AppRoutes.signupCorporate
+          : AppRoutes.signupIndividual,
+    );
   }
 
   @override
@@ -108,6 +112,28 @@ class _AccountTypeScreenState extends ConsumerState<AccountTypeScreen> {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  // Escape hatch — lets users bail out if they got stuck
+                  // partway through setup. Signs them out so the next
+                  // launch starts at /login.
+                  InkWell(
+                    onTap: () async {
+                      await ref.read(authRepositoryProvider).signOut();
+                      if (!context.mounted) return;
+                      context.go(AppRoutes.login);
+                    },
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      child: Text(
+                        'SIGN OUT',
+                        style: AppTextStyles.brandFooter.copyWith(
+                          color: AppColors.textTertiaryOnLight,
+                          letterSpacing: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -258,19 +284,12 @@ class _AccountTypeCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: AnimatedContainer(
-          duration: AppConstants.shortAnim,
+        child: GradientBorderBox(
+          borderRadius: AppSpacing.radiusLg,
+          borderWidth: selected ? 1.8 : 1.0,
+          innerColor:
+              selected ? AppColors.surfaceLight : AppColors.cardLight,
           padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.surfaceLight : AppColors.cardLight,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(
-              color: selected
-                  ? AppColors.primary
-                  : AppColors.primary.withValues(alpha: 0.12),
-              width: selected ? 2 : 1,
-            ),
-          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

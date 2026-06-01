@@ -1,12 +1,13 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/utils/logger.dart';
+import '../../../../core/widgets/picked_file.dart';
 
 /// Preview area for the uploaded creative.
 ///
@@ -28,7 +29,7 @@ class CreativePreview extends StatefulWidget {
     this.onVideoTooLong,
   });
 
-  final PlatformFile? file;
+  final PickedFile? file;
   final bool isVideo;
   final String headerLabel;
   final String fallbackTitle;
@@ -74,8 +75,9 @@ class _CreativePreviewState extends State<CreativePreview> {
       if (controller.value.duration.inSeconds > widget.maxVideoSeconds) {
         widget.onVideoTooLong?.call();
       }
-    } catch (_) {
+    } catch (e, st) {
       // Codec or playback failure — fall through to empty state.
+      appLogger.w('Video preview init failed', error: e, stackTrace: st);
       await controller.dispose();
     }
   }
@@ -142,14 +144,11 @@ class _CreativePreviewState extends State<CreativePreview> {
       return _VideoStage(controller: video, maxSeconds: widget.maxVideoSeconds);
     }
 
-    if (file.path != null) {
-      return Image.file(
-        File(file.path!),
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const _LoadingStage(),
-      );
-    }
-    return const _LoadingStage();
+    return Image.file(
+      File(file.path),
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => const _LoadingStage(),
+    );
   }
 }
 

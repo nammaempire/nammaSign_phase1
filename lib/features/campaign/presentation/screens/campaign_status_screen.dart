@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_routes.dart';
@@ -7,19 +8,22 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/widgets/gradient_border_box.dart';
 import '../../../history/domain/booking.dart';
+import '../../../history/presentation/providers/bookings_provider.dart';
 import '../widgets/campaign_status_hero.dart';
 import '../widgets/timeline_step.dart';
 
-/// Renders the campaign status for a single booking. Switches between
-/// Under Review / Live on Board / Needs Changes based on [booking.status].
-class CampaignStatusScreen extends StatelessWidget {
-  const CampaignStatusScreen({super.key, required this.booking});
+/// Renders the campaign status for a single booking. Streams the booking
+/// live from Firestore so status changes (admin approval, rejection)
+/// reflect instantly without the user reloading.
+class CampaignStatusScreen extends ConsumerWidget {
+  const CampaignStatusScreen({super.key, required this.bookingId});
 
-  final Booking booking;
+  final String bookingId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -29,6 +33,8 @@ class CampaignStatusScreen extends StatelessWidget {
       ),
     );
 
+    final bookingAsync = ref.watch(bookingByIdProvider(bookingId));
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       body: SafeArea(
@@ -36,12 +42,38 @@ class CampaignStatusScreen extends StatelessWidget {
           children: [
             _TopBar(),
             Expanded(
-              child: switch (booking.status) {
-                BookingStatus.pending => _UnderReviewBody(booking: booking),
-                BookingStatus.live => _LiveOnBoardBody(booking: booking),
-                BookingStatus.rejected =>
-                  _NeedsChangesBody(booking: booking),
-              },
+              child: bookingAsync.when(
+                loading: () =>
+                    const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(
+                  child: Text(
+                    "Couldn't load campaign\n$e",
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textTertiaryOnLight,
+                    ),
+                  ),
+                ),
+                data: (booking) {
+                  if (booking == null) {
+                    return Center(
+                      child: Text(
+                        'Booking not found.',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: AppColors.textTertiaryOnLight,
+                        ),
+                      ),
+                    );
+                  }
+                  return switch (booking.status) {
+                    BookingStatus.live =>
+                      _LiveOnBoardBody(booking: booking),
+                    BookingStatus.rejected =>
+                      _NeedsChangesBody(booking: booking),
+                    _ => _UnderReviewBody(booking: booking),
+                  };
+                },
+              ),
             ),
           ],
         ),
@@ -116,7 +148,9 @@ class _UnderReviewBody extends StatelessWidget {
   final Booking booking;
 
   // Demo amber palette for the under-review state.
-  static const _amberCircle = Color(0xFFD2A555);
+  // Circle now reuses the pill background tone so the clock reads as a
+  // dark-amber outline on a soft cream disc (matches the design ref).
+  static const _amberCircle = Color(0xFFFAEBD3);
   static const _amberPillBg = Color(0xFFFAEBD3);
   static const _amberPillFg = Color(0xFFB7791F);
 
@@ -137,6 +171,8 @@ class _UnderReviewBody extends StatelessWidget {
           CampaignStatusHero(
             circleColor: _amberCircle,
             icon: Icons.schedule_rounded,
+            iconColor: _amberPillFg,
+            titleFontSize: 32,
             pillText: 'UNDER REVIEW',
             pillBg: _amberPillBg,
             pillFg: _amberPillFg,
@@ -174,32 +210,25 @@ class _UnderReviewBody extends StatelessWidget {
             header: 'CAMPAIGN  ·  $orderRef',
             steps: [
               TimelineStep(
-                title: 'Payment received',
-                subtitle: '14:23  ·  ₹${_format(booking.amount)} captured',
+                title: 'Booking submitted',
+                subtitle: '₹${_format(booking.amount)}  ·  payable on approval',
                 dotKind: TimelineDotKind.filled,
                 dotColor: AppColors.success,
               ),
               TimelineStep(
                 title: 'Admin review',
-                subtitle: 'In progress  ·  ~1h 38m left',
+                subtitle: 'In progress  ·  within ~2 hours',
                 dotKind: TimelineDotKind.filled,
                 dotColor: AppColors.primary,
               ),
               TimelineStep(
                 title: 'Goes live on board',
-                subtitle: 'Scheduled  ·  28 Oct, 6:00 AM',
+                subtitle: 'Once approved',
                 dotKind: TimelineDotKind.empty,
                 titleMuted: true,
                 isLast: true,
               ),
             ],
-          ),
-
-          const SizedBox(height: AppSpacing.xxl),
-
-          _OutlinedCta(
-            label: 'View campaign details',
-            onTap: () => context.showSnack('Campaign details (Phase 1b)'),
           ),
         ],
       ),
@@ -225,17 +254,19 @@ class _LiveOnBoardBody extends StatelessWidget {
   const _LiveOnBoardBody({required this.booking});
   final Booking booking;
 
-  static const _greenCircle = Color(0xFFC4DFA0);
+  // Lighter lime circle reads as a soft disc behind the dark-green
+  // bullseye icon — matches the Under Review treatment.
+  static const _greenCircle = Color(0xFFDBE6BB);
   static const _greenPillBg = Color(0xFFDAF5E0);
   static const _greenPillFg = Color(0xFF3B7F2A);
 
   @override
   Widget build(BuildContext context) {
-    // Demo values — would come from analytics in real app.
-    const dayOfTotal = 3;
-    final total = booking.durationDays;
-    const views = '36k';
-    final left = total - dayOfTotal;
+    final boardLabel = _shortBoardLabel(booking.boardType);
+    final dates = _formatDateRange(
+      booking.scheduledStartAt,
+      booking.scheduledEndAt,
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
@@ -250,144 +281,151 @@ class _LiveOnBoardBody extends StatelessWidget {
           CampaignStatusHero(
             circleColor: _greenCircle,
             icon: Icons.adjust_rounded,
+            iconColor: _greenPillFg,
+            titleFontSize: 32,
             pillText: 'LIVE ON BOARD',
             pillBg: _greenPillBg,
             pillFg: _greenPillFg,
             titleLeading: "You're on ",
             titleTrailingItalic: '${booking.location}.',
-            subtitle: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textSecondaryOnLight,
-                  height: 1.5,
-                ),
-                children: [
-                  const TextSpan(text: 'Approved & running. '),
-                  TextSpan(
-                    text: 'Day $dayOfTotal of $total.',
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.textPrimaryOnLight,
-                      fontWeight: FontWeight.w700,
+            subtitle: const Text(
+              'Your campaign is approved and running on the selected board.',
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.xl),
+
+          _InfoCard(
+            header: 'CAMPAIGN INFORMATION',
+            rows: [
+              _InfoRow(
+                label: 'STATUS',
+                valueBuilder: (context) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: _greenPillFg,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const TextSpan(
-                    text: ' Track impressions in real time below.',
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.xl),
-
-          // Stat row
-          Row(
-            children: [
-              Expanded(child: _StatChip(value: views, label: 'VIEWS')),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _StatChip(
-                  value: '$dayOfTotal / $total',
-                  label: 'DAYS RUN',
+                    const SizedBox(width: 6),
+                    Text(
+                      'LIVE',
+                      style: AppTextStyles.brandFooter.copyWith(
+                        color: _greenPillFg,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(child: _StatChip(value: '$left', label: 'LEFT')),
-            ],
-          ),
-
-          const SizedBox(height: AppSpacing.xl),
-
-          _TimelineCard(
-            header: 'CAMPAIGN TIMELINE',
-            steps: [
-              TimelineStep(
-                title: 'Approved by admin',
-                subtitle: '27 Oct  ·  15:48',
-                dotKind: TimelineDotKind.filled,
-                dotColor: AppColors.success,
+              _InfoRow(
+                label: 'BOARD NAME',
+                value: '${booking.location} · $boardLabel',
               ),
-              TimelineStep(
-                title: 'Went live on board',
-                subtitle: '28 Oct  ·  06:00',
-                dotKind: TimelineDotKind.filled,
-                dotColor: AppColors.success,
+              _InfoRow(
+                label: 'DURATION',
+                value: '${booking.durationDays} days',
               ),
-              TimelineStep(
-                title: 'Running  ·  day $dayOfTotal of $total',
-                subtitle: 'Performing',
-                highlight: '+18% vs avg',
-                dotKind: TimelineDotKind.filled,
-                dotColor: AppColors.primary,
-              ),
-              TimelineStep(
-                title: 'Campaign ends',
-                subtitle: '11 Nov  ·  23:59',
-                dotKind: TimelineDotKind.empty,
-                titleMuted: true,
-                isLast: true,
+              _InfoRow(
+                label: 'ACTIVE DATES',
+                value: dates,
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(height: AppSpacing.xxl),
+  /// "4 LED Boards" → "LED", "Digital Screen" → "Digital Screen".
+  static String _shortBoardLabel(String raw) {
+    if (raw.toUpperCase().contains('LED')) return 'LED';
+    return raw;
+  }
 
-          // Solid dark CTA
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () =>
-                  context.showSnack('Live preview (Phase 1b)'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.badgeDark,
-                foregroundColor: AppColors.textPrimary,
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.radiusLg),
-                ),
-              ),
-              child: Text(
-                'View live preview',
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                ),
-              ),
+  /// Renders the active window as "28 Oct — 11 Nov", or "—" when missing.
+  static String _formatDateRange(DateTime? start, DateTime? end) {
+    if (start == null || end == null) return '—';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    String fmt(DateTime d) => '${d.day} ${months[d.month - 1]}';
+    return '${fmt(start)} — ${fmt(end)}';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Campaign Information card — header + labelled rows separated by hairlines.
+// ---------------------------------------------------------------------------
+
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({required this.header, required this.rows});
+
+  final String header;
+  final List<_InfoRow> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final children = <Widget>[];
+    for (var i = 0; i < rows.length; i++) {
+      if (i > 0) {
+        children.add(
+          Container(
+            height: 1,
+            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            color: AppColors.primary.withValues(alpha: 0.12),
+          ),
+        );
+      }
+      children.add(rows[i]);
+    }
+
+    return GradientBorderBox(
+      borderRadius: AppSpacing.radiusLg,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            header,
+            style: AppTextStyles.brandFooter.copyWith(
+              color: AppColors.primary,
+              letterSpacing: 2,
+              fontWeight: FontWeight.w700,
             ),
           ),
+          const SizedBox(height: AppSpacing.md),
+          ...children,
         ],
       ),
     );
   }
 }
 
-class _StatChip extends StatelessWidget {
-  const _StatChip({required this.value, required this.label});
-  final String value;
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.label,
+    this.value,
+    this.valueBuilder,
+  }) : assert(value != null || valueBuilder != null,
+            'Provide either value or valueBuilder');
+
   final String label;
+  final String? value;
+  final WidgetBuilder? valueBuilder;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      child: Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+      child: Row(
         children: [
-          Text(
-            value,
-            style: AppTextStyles.brandHuge.copyWith(
-              fontSize: 20,
-              color: AppColors.textPrimaryOnLight,
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 4),
           Text(
             label,
             style: AppTextStyles.brandFooter.copyWith(
@@ -396,6 +434,16 @@ class _StatChip extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
+          const Spacer(),
+          valueBuilder != null
+              ? valueBuilder!(context)
+              : Text(
+                  value!,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: AppColors.textPrimaryOnLight,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
         ],
       ),
     );
@@ -410,7 +458,9 @@ class _NeedsChangesBody extends StatelessWidget {
   const _NeedsChangesBody({required this.booking});
   final Booking booking;
 
-  static const _pinkCircle = Color(0xFFE5559B);
+  // Pink palette — circle now uses the pill bg so the error icon reads as
+  // a dark pink outline on a soft blush disc (matches Under Review/Live).
+  static const _pinkCircle = Color(0xFFFBE3E8);
   static const _pinkPillBg = Color(0xFFFBE3E8);
   static const _pinkPillFg = Color(0xFFB7245B);
 
@@ -418,8 +468,10 @@ class _NeedsChangesBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final feedback = booking.adminNote ??
         'Creative exceeds the 30% text rule for outdoor LED. '
-            'Please reduce body copy and increase logo size so the brand '
-            "reads from 50m+. Re-upload and we'll fast-track approval.";
+            'The body copy is too dense to read from 50m+ at vehicle speeds. '
+            "We're unable to approve this submission.";
+    final reviewer = booking.adminReviewerName ?? 'NammaSign Team';
+    final ruleCode = booking.adminRuleCode;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
@@ -433,31 +485,26 @@ class _NeedsChangesBody extends StatelessWidget {
         children: [
           CampaignStatusHero(
             circleColor: _pinkCircle,
-            icon: Icons.priority_high_rounded,
-            pillText: 'NEEDS CHANGES',
+            icon: Icons.error_outline_rounded,
+            iconColor: _pinkPillFg,
+            titleFontSize: 32,
+            pillText: 'NOT APPROVED',
             pillBg: _pinkPillBg,
             pillFg: _pinkPillFg,
             dashedRing: false,
-            titleLeading: 'Almost there — ',
-            titleTrailingItalic: 'one fix.',
+            titleLeading: 'Campaign ',
+            titleTrailingItalic: 'not approved.',
             subtitle: const Text(
-              'Edit your creative based on admin feedback and resubmit. '
-              'No re-payment needed.',
+              'Your campaign did not pass our admin review. '
+              'Please see the feedback below.',
             ),
           ),
 
           const SizedBox(height: AppSpacing.xxl),
 
-          // Feedback card
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.1),
-              ),
-            ),
+          // Feedback card with left pink accent stripe.
+          _LeftAccentCard(
+            accentColor: _pinkPillFg,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -479,16 +526,16 @@ class _NeedsChangesBody extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'KAVYA R.',
+                      reviewer.toUpperCase(),
                       style: AppTextStyles.brandFooter.copyWith(
-                        color: AppColors.textSecondaryOnLight,
+                        color: _pinkPillFg,
                         letterSpacing: 2,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.lg),
                 Text(
                   '"$feedback"',
                   style: AppTextStyles.bodyLarge.copyWith(
@@ -513,68 +560,166 @@ class _NeedsChangesBody extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      'RULE: NE-CREATIVE-04',
-                      style: AppTextStyles.brandFooter.copyWith(
-                        color: AppColors.textPrimaryOnLight,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.5,
+                    if (ruleCode != null && ruleCode.isNotEmpty)
+                      Text(
+                        'RULE: $ruleCode',
+                        style: AppTextStyles.brandFooter.copyWith(
+                          color: AppColors.textPrimaryOnLight,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.5,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: AppSpacing.xxl),
+          const SizedBox(height: AppSpacing.lg),
 
-          // Primary CTA — Edit & resubmit
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () =>
-                  context.showSnack('Edit creative (Phase 1b)'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.textPrimary,
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.radiusLg),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Edit & resubmit',
-                    style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.textPrimary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  const Icon(
-                    Icons.edit_outlined,
-                    size: 18,
-                    color: AppColors.textPrimary,
-                  ),
-                ],
+          // Refund card — lavender background, white icon box, message.
+          _RefundCard(amount: booking.amount),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Card with a coloured accent strip down the left edge (Not Approved state).
+// ---------------------------------------------------------------------------
+
+class _LeftAccentCard extends StatelessWidget {
+  const _LeftAccentCard({
+    required this.accentColor,
+    required this.child,
+  });
+
+  final Color accentColor;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 4, color: accentColor),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: child,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Refund initiated card — lavender bg + replay icon box + message.
+// ---------------------------------------------------------------------------
+
+class _RefundCard extends StatelessWidget {
+  const _RefundCard({required this.amount});
+  final int amount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.replay_rounded,
+              color: AppColors.primary,
+              size: 22,
+            ),
           ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          _OutlinedCta(
-            label: 'Contact support',
-            onTap: () => context.showSnack('Support (Phase 1b)'),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Refund initiated',
+                  style: AppTextStyles.brandHuge.copyWith(
+                    fontSize: 18,
+                    color: AppColors.textPrimaryOnLight,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                RichText(
+                  text: TextSpan(
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: AppColors.textSecondaryOnLight,
+                      height: 1.5,
+                    ),
+                    children: [
+                      const TextSpan(text: 'Your amount of '),
+                      TextSpan(
+                        text: '₹${_formatAmount(amount)}',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: AppColors.textPrimaryOnLight,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const TextSpan(
+                        text:
+                            ' will be refunded to your original payment method within ',
+                      ),
+                      TextSpan(
+                        text: '5–7 business days.',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: AppColors.textPrimaryOnLight,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  static String _formatAmount(int n) {
+    final s = n.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
   }
 }
 
@@ -607,15 +752,9 @@ class _TimelineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GradientBorderBox(
+      borderRadius: AppSpacing.radiusLg,
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.1),
-        ),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -635,37 +774,3 @@ class _TimelineCard extends StatelessWidget {
   }
 }
 
-class _OutlinedCta extends StatelessWidget {
-  const _OutlinedCta({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.textPrimaryOnLight,
-          backgroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 56),
-          side: BorderSide(
-            color: AppColors.primary.withValues(alpha: 0.18),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.textPrimaryOnLight,
-            fontSize: 16,
-          ),
-        ),
-      ),
-    );
-  }
-}

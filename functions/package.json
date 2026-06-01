@@ -1,0 +1,19 @@
+{
+  "name": "nammasign-functions",
+  "description": "Cloud Functions for NammaSign — Razorpay payments",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.1.0",
+    "razorpay": "^2.9.4"
+  },
+  "private": true
+}

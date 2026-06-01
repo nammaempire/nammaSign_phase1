@@ -78,22 +78,14 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       return;
     }
 
-    // Phase 1a: skip real OTP verification. Sign in via the fake auth repo
-    // so the auth state stream emits a user — the router then auto-redirects
-    // to /home. The real check goes in once Firebase is wired up in Phase 1b.
+    // verifyOtp posts the SMS code to Firebase Auth using the verificationId
+    // captured during sendOtp on the Login screen. On success the auth state
+    // stream emits a user → router redirects to /home. On failure the
+    // ref.listen handler below shows the real Firebase error message.
     setState(() => _isVerifying = true);
-    try {
-      await ref.read(authRepositoryProvider).signInWithEmail(
-            email: 'demo@nammaempire.com',
-            password: 'demo',
-          );
-      // Router redirects to /home — nothing else to do.
-    } catch (e) {
-      if (!mounted) return;
-      context.showErrorSnack('Could not sign in. Try again.');
-    } finally {
-      if (mounted) setState(() => _isVerifying = false);
-    }
+    await ref.read(otpFlowProvider.notifier).verifyOtp(_code);
+    if (!mounted) return;
+    setState(() => _isVerifying = false);
   }
 
   Future<void> _resend() async {
@@ -128,9 +120,18 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // React to auto-navigation on errors.
+    // Drive UI feedback off the OTP flow state.
+    //   - OtpVerified → push to /home explicitly (don't wait for the
+    //     router redirect to catch up — Firebase's authStateChanges
+    //     stream can emit a tick after verifyOtp resolves, so the
+    //     redirect alone causes a visible "stuck on OTP" beat).
+    //   - OtpError → surface the real Firebase message to the user.
     ref.listen<OtpFlowState>(otpFlowProvider, (prev, next) {
-      if (next is OtpError) context.showErrorSnack(next.message);
+      if (next is OtpVerified) {
+        context.go(AppRoutes.home);
+      } else if (next is OtpError) {
+        context.showErrorSnack(next.message);
+      }
     });
 
     final flow = ref.watch(otpFlowProvider);

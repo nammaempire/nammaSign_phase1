@@ -1,13 +1,8 @@
-import 'package:file_picker/file_picker.dart';
-
+import '../../../core/widgets/picked_file.dart';
 import '../../account_type/domain/account_type.dart';
 import '../../home/domain/billboard_listing.dart';
 
 /// In-flight booking that the user is assembling across the 3 wizard steps.
-///
-/// Held in a Riverpod StateNotifier so values survive forward/back navigation
-/// inside the booking flow. Cleared when the booking is submitted or the
-/// user backs out of the flow entirely.
 class BookingDraft {
   const BookingDraft({
     this.listing,
@@ -36,7 +31,7 @@ class BookingDraft {
   final String? purpose;
 
   // Creative (image or video)
-  final PlatformFile? creativeFile;
+  final PickedFile? creativeFile;
   final bool creativeIsVideo;
 
   BookingDraft copyWith({
@@ -48,7 +43,7 @@ class BookingDraft {
     String? campaignId,
     int? durationDays,
     String? purpose,
-    PlatformFile? creativeFile,
+    PickedFile? creativeFile,
     bool? creativeIsVideo,
   }) {
     return BookingDraft(

@@ -87,7 +87,7 @@ class _PaymentSuccessScreenState
               const SizedBox(height: AppSpacing.xl),
 
               Text(
-                'Payment',
+                'Booking',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.brandHuge.copyWith(
                   fontSize: 32,
@@ -96,7 +96,7 @@ class _PaymentSuccessScreenState
                 ),
               ),
               Text(
-                'received.',
+                'submitted.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.brandHugeItalic.copyWith(
                   fontSize: 32,
@@ -108,8 +108,8 @@ class _PaymentSuccessScreenState
               const SizedBox(height: AppSpacing.md),
 
               Text(
-                "Your campaign is now in admin review. We'll notify you "
-                'within 2 hours.',
+                'Your campaign is now in admin review. Our team will reach '
+                'out about payment and confirm it goes live.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textSecondaryOnLight,
@@ -152,7 +152,7 @@ class _PaymentSuccessScreenState
                       label: 'Campaign',
                       value: draft.campaignTitle ??
                           draft.purpose ??
-                          'Brigade Cornerstone',
+                          'Untitled campaign',
                     ),
                     _Line(
                       label: 'Board',
@@ -172,7 +172,7 @@ class _PaymentSuccessScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'AMOUNT PAID',
+                              'AMOUNT DUE',
                               style: AppTextStyles.brandFooter.copyWith(
                                 color: AppColors.textTertiaryOnLight,
                                 letterSpacing: 2,

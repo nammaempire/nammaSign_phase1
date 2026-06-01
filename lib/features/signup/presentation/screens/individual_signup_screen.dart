@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +13,11 @@ import '../../../../core/widgets/file_upload_slot.dart';
 import '../../../../core/widgets/india_flag.dart';
 import '../../../../core/widgets/labeled_form_field.dart';
 import '../../../../core/widgets/outlined_input.dart';
+import '../../../../core/widgets/picked_file.dart';
 import '../../../../core/widgets/uploaded_file_card.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../user/domain/user_profile.dart';
+import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../widgets/signup_scaffold.dart';
 
 /// "A few personal details." — individual account signup form.
@@ -33,8 +36,8 @@ class _IndividualSignupScreenState
   final _phone = TextEditingController();
   final _aadhaar = TextEditingController();
 
-  PlatformFile? _aadhaarFront;
-  PlatformFile? _aadhaarBack;
+  PickedFile? _aadhaarFront;
+  PickedFile? _aadhaarBack;
 
   @override
   void dispose() {
@@ -45,14 +48,12 @@ class _IndividualSignupScreenState
     super.dispose();
   }
 
-  Future<PlatformFile?> _pickFile() async {
+  Future<PickedFile?> _pickFile() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-        withData: false,
+      return await PickedFile.pick(
+        extensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        label: 'documents',
       );
-      return result?.files.firstOrNull;
     } catch (e, st) {
       appLogger.e('File pick failed', error: e, stackTrace: st);
       if (mounted) context.showErrorSnack('Could not open file picker');
@@ -70,19 +71,96 @@ class _IndividualSignupScreenState
     if (f != null) setState(() => _aadhaarBack = f);
   }
 
-  void _onContinue() {
-    context.showSnack('Account created (demo). Sign in to continue.');
-    context.go(AppRoutes.login);
+  Future<void> _onContinue() async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      context.go(AppRoutes.login);
+      return;
+    }
+    // Full name flips isSetupComplete=true. Without it the router
+    // would loop us back to the setup screens forever.
+    if (_name.text.trim().isEmpty) {
+      context.showErrorSnack('Enter your full name to continue');
+      return;
+    }
+    // Only persist the last 4 digits of Aadhaar — never the full number.
+    final aadhaarDigits = _aadhaar.text.replaceAll(RegExp(r'\D'), '');
+    // Aadhaar is exactly 12 digits — reject partial entries.
+    if (aadhaarDigits.isNotEmpty && aadhaarDigits.length != 12) {
+      context.showErrorSnack('Enter a valid 12-digit Aadhaar number');
+      return;
+    }
+    final aadhaarLast4 = aadhaarDigits.length >= 4
+        ? aadhaarDigits.substring(aadhaarDigits.length - 4)
+        : aadhaarDigits;
+    try {
+      final repo = ref.read(userProfileRepositoryProvider);
+      await repo.saveIndividual(
+        user.id,
+        IndividualProfile(
+          fullName: _name.text.trim(),
+          dob: _parseDob(_dob.text.trim()),
+          mobile: _phone.text.replaceAll(' ', ''),
+          aadhaarLast4: aadhaarLast4,
+        ),
+      );
+      // Best-effort KYC upload — non-fatal so a flaky upload doesn't trap
+      // the user on the signup screen. They can re-upload later.
+      try {
+        await repo.uploadKycDocs(user.id, {
+          if (_aadhaarFront != null) 'aadhaarFront': _aadhaarFront!,
+          if (_aadhaarBack != null) 'aadhaarBack': _aadhaarBack!,
+        });
+      } catch (e, st) {
+        appLogger.w('KYC upload failed', error: e, stackTrace: st);
+        if (mounted) {
+          context.showSnack('Profile saved. Document upload will retry later.');
+        }
+      }
+      if (!mounted) return;
+      context.go(AppRoutes.home);
+    } catch (e) {
+      if (!mounted) return;
+      context.showErrorSnack('Could not save profile: $e');
+    }
+  }
+
+  /// "14 Mar 1992" → DateTime. Returns null on bad input.
+  DateTime? _parseDob(String s) {
+    if (s.isEmpty) return null;
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final parts = s.split(' ');
+    if (parts.length != 3) return null;
+    final day = int.tryParse(parts[0]);
+    final month = months.indexOf(parts[1]) + 1;
+    final year = int.tryParse(parts[2]);
+    if (day == null || month <= 0 || year == null) return null;
+    return DateTime(year, month, day);
   }
 
   Future<void> _pickDob() async {
     final today = DateTime.now();
+    // Must be at least 18 — the latest selectable DOB is 18 years ago today.
+    final latestAdultDob = DateTime(today.year - 18, today.month, today.day);
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime(today.year - 25),
       firstDate: DateTime(1920),
-      lastDate: today,
-      helpText: 'Select date of birth',
+      lastDate: latestAdultDob,
+      helpText: 'Select date of birth (must be 18+)',
     );
     if (picked == null) return;
     const months = [
@@ -108,7 +186,8 @@ class _IndividualSignupScreenState
     return SignupScaffold(
       titlePart1: 'A few ',
       titlePart2Italic: 'personal details.',
-      subtitle: 'Aadhaar is used only for one-time verification. '
+      subtitle:
+          'Aadhaar is used only for one-time verification. '
           'We never store the number on device.',
       onContinue: _onContinue,
       body: Column(
@@ -118,7 +197,7 @@ class _IndividualSignupScreenState
             label: 'FULL NAME (AS PER AADHAAR)',
             child: OutlinedInput(
               controller: _name,
-              hint: 'Karthik Subramaniam',
+              hint: 'e.g. Your full name',
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -287,8 +366,7 @@ class _PhoneInputWithFlagState extends State<_PhoneInputWithFlag> {
                   focusedErrorBorder: InputBorder.none,
                   disabledBorder: InputBorder.none,
                   isDense: true,
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                  contentPadding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
                   errorStyle: TextStyle(height: 0, fontSize: 0),
                 ),
               ),

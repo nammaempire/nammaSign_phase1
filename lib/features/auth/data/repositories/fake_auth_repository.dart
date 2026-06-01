@@ -91,6 +91,20 @@ class FakeAuthRepository implements AuthRepository {
       signInWithEmail(email: email, password: password);
 
   @override
+  Future<AppUser> signInWithGoogle() async {
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    final user = UserModel(
+      id: 'fake-google-user-id',
+      email: 'demo@gmail.com',
+      displayName: 'Demo Google User',
+      createdAt: DateTime.now(),
+    );
+    _current = user;
+    _controller.add(user);
+    return user;
+  }
+
+  @override
   Future<void> signOut() async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
     _current = null;

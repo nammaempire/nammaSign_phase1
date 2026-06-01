@@ -1,20 +1,16 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_spacing.dart';
+import 'picked_file.dart';
 import 'upload_area.dart';
 import 'uploaded_file_card.dart';
 
-/// One file "slot" on a signup form.
+/// One file "slot" on a signup or booking form.
 ///
 /// Renders the dashed [UploadArea] when no file is selected. Once a
-/// [PlatformFile] is picked (parent passes it down), renders an
-/// [UploadedFileCard] showing the actual filename and size, with a small
+/// [PickedFile] is picked (parent passes it down), renders an
+/// [UploadedFileCard] showing the actual filename + size, with a small
 /// remove icon to clear the slot.
-///
-/// The parent owns the file state — this widget is stateless. Tapping
-/// either state calls [onPickFile]; the parent is responsible for
-/// invoking the file picker and updating its own state.
 class FileUploadSlot extends StatelessWidget {
   const FileUploadSlot({
     super.key,
@@ -27,7 +23,7 @@ class FileUploadSlot extends StatelessWidget {
     this.onRemove,
   });
 
-  final PlatformFile? file;
+  final PickedFile? file;
   final Future<void> Function() onPickFile;
   final String emptyTitle;
   final String emptySubtitle;
@@ -58,7 +54,7 @@ class FileUploadSlot extends StatelessWidget {
         Expanded(
           child: UploadedFileCard(
             fileName: file!.name,
-            sizeLabel: formatSize(file!.size),
+            sizeLabel: formatSize(file!.sizeBytes),
             status: filledStatus,
             icon: filledIcon,
             onTap: onPickFile, // tap card to re-pick / replace

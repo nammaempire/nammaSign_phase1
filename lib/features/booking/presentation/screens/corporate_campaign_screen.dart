@@ -1,8 +1,9 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../../core/widgets/picked_file.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -12,6 +13,7 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/widgets/labeled_form_field.dart';
 import '../../../../core/widgets/outlined_input.dart';
+import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/booking_top_bar.dart';
 import '../widgets/creative_preview.dart';
@@ -31,16 +33,11 @@ class CorporateCampaignScreen extends ConsumerStatefulWidget {
 
 class _CorporateCampaignScreenState
     extends ConsumerState<CorporateCampaignScreen> {
-  final _org = TextEditingController(text: 'Brigade Enterprises Ltd.');
+  final _org = TextEditingController();
   final _manager = TextEditingController();
   final _campaignId = TextEditingController();
-  final _title = TextEditingController(
-    text: 'Brigade Cornerstone — Diwali Launch',
-  );
-  final _desc = TextEditingController(
-    text: 'Pre-launch teaser for our new mixed-use development on Hosur Road. '
-        'Drive site visits in October.',
-  );
+  final _title = TextEditingController();
+  final _desc = TextEditingController();
 
   @override
   void initState() {
@@ -53,10 +50,12 @@ class _CorporateCampaignScreenState
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
     );
-    // Seed controllers from the booking draft once it's ready.
+    // Seed controllers from the booking draft + the user's real profile.
     final draft = ref.read(bookingProvider);
-    _manager.text = draft.manager ?? 'Priya Menon';
-    _campaignId.text = draft.campaignId ?? 'NE-A7842';
+    final corp = ref.read(userProfileProvider).valueOrNull?.corporate;
+    _org.text = corp?.name ?? '';
+    _manager.text = draft.manager ?? corp?.managerName ?? '';
+    _campaignId.text = draft.campaignId ?? '';
     // Sync initial values back into the draft so payment screen sees them.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifier = ref.read(bookingProvider.notifier);
@@ -77,20 +76,16 @@ class _CorporateCampaignScreenState
     super.dispose();
   }
 
-  Future<void> _pick({required FileType type}) async {
+  Future<void> _pick({required bool isVideo}) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: type == FileType.video
-            ? ['mp4', 'mov']
-            : ['jpg', 'jpeg', 'png'],
-        withData: false,
+      final file = await PickedFile.pick(
+        extensions: isVideo ? ['mp4', 'mov'] : ['jpg', 'jpeg', 'png'],
+        label: isVideo ? 'videos' : 'images',
       );
-      final file = result?.files.firstOrNull;
       if (file == null) return;
       ref
           .read(bookingProvider.notifier)
-          .setCreative(file, isVideo: type == FileType.video);
+          .setCreative(file, isVideo: isVideo);
     } catch (e, st) {
       appLogger.e('File pick failed', error: e, stackTrace: st);
       if (mounted) context.showErrorSnack('Could not open file picker');
@@ -114,9 +109,7 @@ class _CorporateCampaignScreenState
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxl,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -150,10 +143,7 @@ class _CorporateCampaignScreenState
                     LabeledFormField(
                       label: 'ORGANISATION',
                       showIndicator: false,
-                      child: OutlinedInput(
-                        controller: _org,
-                        locked: true,
-                      ),
+                      child: OutlinedInput(controller: _org, locked: true),
                     ),
                     const SizedBox(height: AppSpacing.lg),
 
@@ -230,8 +220,8 @@ class _CorporateCampaignScreenState
                       file: draft.creativeFile,
                       isVideo: draft.creativeIsVideo,
                       headerLabel: 'Creative preview  ·  Live on board',
-                      fallbackTitle: 'Brigade Cornerstone.',
-                      fallbackSubtitle: 'Diwali Launch  ·  28 Oct',
+                      fallbackTitle: 'Your creative here',
+                      fallbackSubtitle: 'Add a photo or video below',
                       onVideoTooLong: () => context.showErrorSnack(
                         'Video is longer than 20 seconds. Trim it first.',
                       ),
@@ -243,8 +233,8 @@ class _CorporateCampaignScreenState
                           ? 'Replace creative'
                           : 'Add creative',
                       subtitle: 'JPG / PNG / MP4  ·  up to 50MB',
-                      onPickImage: () => _pick(type: FileType.image),
-                      onPickVideo: () => _pick(type: FileType.video),
+                      onPickImage: () => _pick(isVideo: false),
+                      onPickVideo: () => _pick(isVideo: true),
                     ),
 
                     const SizedBox(height: AppSpacing.xxl),
@@ -271,8 +261,7 @@ class _CorporateCampaignScreenState
                     elevation: 0,
                     minimumSize: const Size(double.infinity, 60),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusLg),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     ),
                   ),
                   child: Row(

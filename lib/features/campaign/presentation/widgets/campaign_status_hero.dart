@@ -20,6 +20,8 @@ class CampaignStatusHero extends StatelessWidget {
     required this.titleTrailingItalic,
     required this.subtitle,
     this.dashedRing = true,
+    this.iconColor = Colors.white,
+    this.titleFontSize = 26,
   });
 
   final Color circleColor;
@@ -31,6 +33,15 @@ class CampaignStatusHero extends StatelessWidget {
   final String titleTrailingItalic;
   final Widget subtitle;
   final bool dashedRing;
+
+  /// Colour used to draw the [icon] inside the centre circle. Defaults to
+  /// white for solid-coloured circles; the Under Review state passes the
+  /// dark amber so the clock reads as outlined on a light cream circle.
+  final Color iconColor;
+
+  /// Override for the headline size. The Under Review state uses 32 so the
+  /// "Hang tight, we're reviewing." headline wraps onto two lines.
+  final double titleFontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +66,7 @@ class CampaignStatusHero extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: Icon(icon, color: Colors.white, size: 42),
+                child: Icon(icon, color: iconColor, size: 42),
               ),
             ],
           ),
@@ -107,7 +118,7 @@ class CampaignStatusHero extends StatelessWidget {
             textAlign: TextAlign.center,
             text: TextSpan(
               style: AppTextStyles.brandHuge.copyWith(
-                fontSize: 26,
+                fontSize: titleFontSize,
                 color: AppColors.textPrimaryOnLight,
                 height: 1.2,
               ),
@@ -116,7 +127,7 @@ class CampaignStatusHero extends StatelessWidget {
                 TextSpan(
                   text: titleTrailingItalic,
                   style: AppTextStyles.brandHugeItalic.copyWith(
-                    fontSize: 26,
+                    fontSize: titleFontSize,
                     color: AppColors.primary,
                     height: 1.2,
                   ),
