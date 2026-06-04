@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../app/theme/app_palette.dart';
 
 /// Dashed lavender upload zone — used when the user has nothing yet OR
 /// to allow uploading additional documents.
@@ -37,7 +38,7 @@ class UploadArea extends StatelessWidget {
               horizontal: AppSpacing.lg,
             ),
             decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             ),
             child: Column(
@@ -60,7 +61,7 @@ class UploadArea extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textPrimaryOnLight,
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -68,7 +69,7 @@ class UploadArea extends StatelessWidget {
                 Text(
                   subtitle,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textTertiaryOnLight,
+                    color: context.colors.textTertiary,
                   ),
                   textAlign: TextAlign.center,
                 ),

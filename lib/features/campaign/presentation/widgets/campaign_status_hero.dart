@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Shared header used on all 3 campaign-status screens.
 ///
@@ -119,7 +120,7 @@ class CampaignStatusHero extends StatelessWidget {
             text: TextSpan(
               style: AppTextStyles.brandHuge.copyWith(
                 fontSize: titleFontSize,
-                color: AppColors.textPrimaryOnLight,
+                color: context.colors.textPrimary,
                 height: 1.2,
               ),
               children: [
@@ -144,7 +145,7 @@ class CampaignStatusHero extends StatelessWidget {
           child: DefaultTextStyle(
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textSecondaryOnLight,
+              color: context.colors.textSecondary,
               height: 1.5,
             ),
             child: subtitle,

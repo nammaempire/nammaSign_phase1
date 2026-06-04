@@ -9,6 +9,7 @@ import '../../../../app/theme/app_text_styles.dart';
 import '../../domain/billboard_listing.dart';
 import '../providers/listings_provider.dart';
 import 'billboard_card.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Local tab body — live search bar + filtered list of [BillboardCard]s.
 ///
@@ -88,7 +89,7 @@ class _LocalTabState extends ConsumerState<LocalTab> {
                   Text(
                     "Couldn't load listings",
                     style: AppTextStyles.h3.copyWith(
-                      color: AppColors.textPrimaryOnLight,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
@@ -96,7 +97,7 @@ class _LocalTabState extends ConsumerState<LocalTab> {
                     e.toString(),
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textTertiaryOnLight,
+                      color: context.colors.textTertiary,
                     ),
                   ),
                 ],
@@ -159,7 +160,7 @@ class _SearchBar extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         border: Border.all(
           color: AppColors.primary.withValues(alpha: 0.12),
@@ -167,9 +168,9 @@ class _SearchBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.search_rounded,
-            color: AppColors.textTertiaryOnLight,
+            color: context.colors.textTertiary,
             size: 22,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -194,12 +195,12 @@ class _SearchBar extends StatelessWidget {
                 cursorColor: AppColors.primary,
                 textInputAction: TextInputAction.search,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textPrimaryOnLight,
+                  color: context.colors.textPrimary,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search by area or board ID...',
                   hintStyle: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textTertiaryOnLight,
+                    color: context.colors.textTertiary,
                   ),
                   filled: false,
                   fillColor: Colors.transparent,
@@ -220,11 +221,11 @@ class _SearchBar extends StatelessWidget {
             GestureDetector(
               onTap: onClear,
               behavior: HitTestBehavior.opaque,
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.only(left: AppSpacing.sm),
                 child: Icon(
                   Icons.close_rounded,
-                  color: AppColors.textTertiaryOnLight,
+                  color: context.colors.textTertiary,
                   size: 20,
                 ),
               ),
@@ -273,7 +274,7 @@ class _EmptyState extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: AppTextStyles.h3.copyWith(
-                color: AppColors.textPrimaryOnLight,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -281,7 +282,7 @@ class _EmptyState extends StatelessWidget {
               subtitle,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textTertiaryOnLight,
+                color: context.colors.textTertiary,
                 height: 1.5,
               ),
             ),

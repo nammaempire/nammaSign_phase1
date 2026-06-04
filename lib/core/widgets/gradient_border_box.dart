@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_palette.dart';
 
 /// Drop-in replacement for a `Container` that paints a gradient border.
 ///
@@ -20,7 +21,7 @@ class GradientBorderBox extends StatelessWidget {
     this.borderRadius = 16,
     this.borderWidth = 1.2,
     this.gradient = AppColors.cardBorderGradient,
-    this.innerColor = Colors.white,
+    this.innerColor,
     this.padding,
     this.margin,
     this.clipBehavior = Clip.antiAlias,
@@ -30,7 +31,12 @@ class GradientBorderBox extends StatelessWidget {
   final double borderRadius;
   final double borderWidth;
   final Gradient gradient;
-  final Color innerColor;
+
+  /// When null (the default), uses the current theme's card surface so the
+  /// box flips correctly between light and dark mode. Pass a concrete color
+  /// only when you need to override (e.g. a colored highlight card).
+  final Color? innerColor;
+
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final Clip clipBehavior;
@@ -46,7 +52,7 @@ class GradientBorderBox extends StatelessWidget {
       padding: EdgeInsets.all(borderWidth),
       child: Container(
         decoration: BoxDecoration(
-          color: innerColor,
+          color: innerColor ?? context.colors.card,
           borderRadius: BorderRadius.circular(
             (borderRadius - borderWidth).clamp(0, borderRadius),
           ),

@@ -13,6 +13,7 @@ import '../widgets/billboard_illustration.dart';
 import '../widgets/booking_illustration.dart';
 import '../widgets/map_illustration.dart';
 import '../widgets/onboarding_slide.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// 3-slide onboarding shown once on first launch.
 /// Get started / Skip → marks onboarding complete and routes straight to
@@ -59,14 +60,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void initState() {
     super.initState();
     // Onboarding has a light background — make the status-bar icons dark.
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
   }
 
   @override
@@ -99,7 +92,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -124,7 +117,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     child: Text(
                       'SKIP',
                       style: AppTextStyles.brandFooter.copyWith(
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                         letterSpacing: 2,
                       ),
                     ),
@@ -233,7 +226,7 @@ class _StepCounter extends StatelessWidget {
       children: [
         Text(
           'STEP ',
-          style: base.copyWith(color: AppColors.textTertiaryOnLight),
+          style: base.copyWith(color: context.colors.textTertiary),
         ),
         Text(
           _two(current),
@@ -244,7 +237,7 @@ class _StepCounter extends StatelessWidget {
         ),
         Text(
           ' / ${_two(total)}',
-          style: base.copyWith(color: AppColors.textTertiaryOnLight),
+          style: base.copyWith(color: context.colors.textTertiary),
         ),
       ],
     );

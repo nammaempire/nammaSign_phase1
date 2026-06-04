@@ -14,6 +14,7 @@ import '../../../account_type/domain/account_type.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../user/domain/user_profile.dart';
 import '../../../user/presentation/providers/user_profile_provider.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// "Personal info" — auto-fills with the data the user already entered
 /// during signup and lets them edit it. Saves back to Firestore
@@ -46,14 +47,6 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
   }
 
   @override
@@ -151,7 +144,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: profileAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -185,16 +178,16 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                           padding: const EdgeInsets.all(AppSpacing.sm),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.chevron_left_rounded,
                                 size: 20,
-                                color: AppColors.textPrimaryOnLight,
+                                color: context.colors.textPrimary,
                               ),
                               const SizedBox(width: 2),
                               Text(
                                 'BACK',
                                 style: AppTextStyles.brandFooter.copyWith(
-                                  color: AppColors.textPrimaryOnLight,
+                                  color: context.colors.textPrimary,
                                   letterSpacing: 2,
                                 ),
                               ),
@@ -218,7 +211,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                           'Personal ',
                           style: AppTextStyles.brandHuge.copyWith(
                             fontSize: 28,
-                            color: AppColors.textPrimaryOnLight,
+                            color: context.colors.textPrimary,
                             height: 1.2,
                           ),
                         ),
@@ -238,7 +231,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                               : 'Your personal details. Used for one-time '
                                   'Aadhaar verification.',
                           style: AppTextStyles.bodyLarge.copyWith(
-                            color: AppColors.textSecondaryOnLight,
+                            color: context.colors.textSecondary,
                           ),
                         ),
 

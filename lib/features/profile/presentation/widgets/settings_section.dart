@@ -4,6 +4,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Grouped settings card with an uppercase section header above.
 ///
@@ -29,7 +30,7 @@ class SettingsSection extends StatelessWidget {
           child: Text(
             title.toUpperCase(),
             style: AppTextStyles.brandFooter.copyWith(
-              color: AppColors.textTertiaryOnLight,
+              color: context.colors.textTertiary,
               letterSpacing: 2,
               fontWeight: FontWeight.w700,
             ),

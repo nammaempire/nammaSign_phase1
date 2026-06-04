@@ -13,6 +13,7 @@ import '../providers/booking_provider.dart';
 import '../widgets/booking_top_bar.dart';
 import '../widgets/order_summary_card.dart';
 import '../widgets/payment_method_card.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Step 3 — order summary + payment method selection.
 ///
@@ -34,14 +35,6 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
   }
 
   Future<void> _submit() async {
@@ -84,7 +77,7 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
         : (draft.purpose ?? 'Untitled campaign');
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -105,7 +98,7 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                       'Review & ',
                       style: AppTextStyles.brandHuge.copyWith(
                         fontSize: 30,
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                         height: 1.2,
                       ),
                     ),
@@ -122,7 +115,7 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                       'Verify everything below, then submit your campaign '
                       'for review. Our team will reach out about payment.',
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textSecondaryOnLight,
+                        color: context.colors.textSecondary,
                       ),
                     ),
 
@@ -143,7 +136,7 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                       child: Text(
                         'PAYMENT METHOD',
                         style: AppTextStyles.brandFooter.copyWith(
-                          color: AppColors.textTertiaryOnLight,
+                          color: context.colors.textTertiary,
                           letterSpacing: 2,
                           fontWeight: FontWeight.w700,
                         ),
@@ -236,13 +229,13 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                   Icon(
                     Icons.lock_outline_rounded,
                     size: 11,
-                    color: AppColors.textTertiaryOnLight,
+                    color: context.colors.textTertiary,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '256-bit encryption  ·  Powered by Razorpay',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textTertiaryOnLight,
+                      color: context.colors.textTertiary,
                     ),
                   ),
                 ],

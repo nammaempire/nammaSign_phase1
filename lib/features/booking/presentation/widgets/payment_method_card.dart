@@ -4,6 +4,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
+import '../../../../app/theme/app_palette.dart';
 
 enum PaymentMethod {
   upi,
@@ -43,7 +44,7 @@ class PaymentMethodCard extends StatelessWidget {
         child: GradientBorderBox(
           borderRadius: AppSpacing.radiusMd,
           borderWidth: selected ? 1.6 : 1.0,
-          innerColor: selected ? AppColors.surfaceLight : Colors.white,
+          innerColor: selected ? context.colors.surface : context.colors.card,
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Row(
             children: [
@@ -53,7 +54,7 @@ class PaymentMethodCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: selected
                       ? Colors.white
-                      : AppColors.surfaceLight,
+                      : context.colors.surface,
                   borderRadius:
                       BorderRadius.circular(AppSpacing.radiusSm),
                 ),
@@ -69,7 +70,7 @@ class PaymentMethodCard extends StatelessWidget {
                       title,
                       style: AppTextStyles.brandHuge.copyWith(
                         fontSize: 16,
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                         height: 1.15,
                       ),
                     ),
@@ -77,7 +78,7 @@ class PaymentMethodCard extends StatelessWidget {
                     Text(
                       subtitle,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondaryOnLight,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -91,7 +92,7 @@ class PaymentMethodCard extends StatelessWidget {
                   border: Border.all(
                     color: selected
                         ? AppColors.primary
-                        : AppColors.textTertiaryOnLight,
+                        : context.colors.textTertiary,
                     width: 1.5,
                   ),
                 ),

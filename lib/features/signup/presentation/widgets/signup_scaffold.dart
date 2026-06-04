@@ -6,6 +6,7 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Common scaffold for signup forms — light background, BACK button, serif
 /// title (regular + italic purple), subtitle, scrollable body, and a
@@ -31,17 +32,9 @@ class SignupScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Force light status-bar icons since the screen is on a light bg.
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -65,16 +58,16 @@ class SignupScaffold extends StatelessWidget {
                       padding: const EdgeInsets.all(AppSpacing.sm),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.chevron_left_rounded,
                             size: 20,
-                            color: AppColors.textPrimaryOnLight,
+                            color: context.colors.textPrimary,
                           ),
                           const SizedBox(width: 2),
                           Text(
                             'BACK',
                             style: AppTextStyles.brandFooter.copyWith(
-                              color: AppColors.textPrimaryOnLight,
+                              color: context.colors.textPrimary,
                               letterSpacing: 2,
                             ),
                           ),
@@ -99,7 +92,7 @@ class SignupScaffold extends StatelessWidget {
                       titlePart1,
                       style: AppTextStyles.brandHuge.copyWith(
                         fontSize: 30,
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                         height: 1.1,
                       ),
                     ),
@@ -115,7 +108,7 @@ class SignupScaffold extends StatelessWidget {
                     Text(
                       subtitle,
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textSecondaryOnLight,
+                        color: context.colors.textSecondary,
                         height: 1.5,
                       ),
                     ),

@@ -5,6 +5,7 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/widgets/upload_area.dart' show DottedBorder;
+import '../../../../app/theme/app_palette.dart';
 
 /// Premium tab — coming soon teaser with feature card + notify-me card.
 class PremiumTab extends StatelessWidget {
@@ -61,7 +62,7 @@ class PremiumTab extends StatelessWidget {
           textAlign: TextAlign.center,
           style: AppTextStyles.brandHuge.copyWith(
             fontSize: 36,
-            color: AppColors.textPrimaryOnLight,
+            color: context.colors.textPrimary,
             height: 1.1,
           ),
         ),
@@ -82,7 +83,7 @@ class PremiumTab extends StatelessWidget {
           'that move the city.',
           textAlign: TextAlign.center,
           style: AppTextStyles.bodyLarge.copyWith(
-            color: AppColors.textSecondaryOnLight,
+            color: context.colors.textSecondary,
             height: 1.5,
           ),
         ),
@@ -200,7 +201,7 @@ class _NotifyMeCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.cardLight,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
         child: Row(
@@ -213,14 +214,14 @@ class _NotifyMeCard extends StatelessWidget {
                     'Get early access',
                     style: AppTextStyles.brandHuge.copyWith(
                       fontSize: 16,
-                      color: AppColors.textPrimaryOnLight,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     "We'll ping you when Premium goes live",
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondaryOnLight,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],

@@ -13,6 +13,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/widgets/otp_box_field.dart';
 import '../providers/auth_provider.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// OTP verification screen — matches the Figma exactly.
 /// Back button, serif title with italic '6-digit code', phone + Edit,
@@ -35,14 +36,6 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
     _startCountdown();
   }
 
@@ -139,7 +132,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     final phone = flow is OtpCodeSent ? flow.phone : '';
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -160,16 +153,16 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       padding: const EdgeInsets.all(AppSpacing.sm),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.chevron_left_rounded,
                             size: 20,
-                            color: AppColors.textPrimaryOnLight,
+                            color: context.colors.textPrimary,
                           ),
                           const SizedBox(width: 2),
                           Text(
                             'BACK',
                             style: AppTextStyles.brandFooter.copyWith(
-                              color: AppColors.textPrimaryOnLight,
+                              color: context.colors.textPrimary,
                               letterSpacing: 2,
                             ),
                           ),
@@ -193,7 +186,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       text: TextSpan(
                         style: AppTextStyles.brandHuge.copyWith(
                           fontSize: 32,
-                          color: AppColors.textPrimaryOnLight,
+                          color: context.colors.textPrimary,
                           height: 1.15,
                         ),
                         children: [
@@ -216,7 +209,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                     Text(
                       'We sent a verification code to',
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textSecondaryOnLight,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
@@ -225,7 +218,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                         Text(
                           _formatPhone(phone),
                           style: AppTextStyles.bodyLarge.copyWith(
-                            color: AppColors.textPrimaryOnLight,
+                            color: context.colors.textPrimary,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
                           ),
@@ -269,7 +262,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                           child: Text(
                             'PASTE FROM SMS',
                             style: AppTextStyles.brandFooter.copyWith(
-                              color: AppColors.textTertiaryOnLight,
+                              color: context.colors.textTertiary,
                               letterSpacing: 2,
                             ),
                           ),
@@ -373,7 +366,7 @@ class _ResendLabel extends StatelessWidget {
           Text(
             'RESEND IN ',
             style: AppTextStyles.brandFooter.copyWith(
-              color: AppColors.textTertiaryOnLight,
+              color: context.colors.textTertiary,
               letterSpacing: 2,
             ),
           ),

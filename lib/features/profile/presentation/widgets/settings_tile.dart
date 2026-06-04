@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// One row inside a [SettingsSection].
 ///
@@ -38,12 +39,12 @@ class SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final textColor = destructive
         ? const Color(0xFFB7245B)
-        : AppColors.textPrimaryOnLight;
+        : context.colors.textPrimary;
     final iconColor =
         destructive ? const Color(0xFFB7245B) : AppColors.primary;
     final iconBg = destructive
         ? const Color(0xFFFBE3E8)
-        : AppColors.surfaceLight;
+        : context.colors.surface;
 
     return Material(
       color: Colors.transparent,
@@ -88,7 +89,7 @@ class SettingsTile extends StatelessWidget {
                           Text(
                             subtitle!,
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondaryOnLight,
+                              color: context.colors.textSecondary,
                               height: 1.3,
                             ),
                           ),
@@ -96,7 +97,7 @@ class SettingsTile extends StatelessWidget {
                             Text(
                               '  ·  ',
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.textTertiaryOnLight,
+                                color: context.colors.textTertiary,
                               ),
                             ),
                             Text(
@@ -120,7 +121,7 @@ class SettingsTile extends StatelessWidget {
               else if (showChevron && !destructive && onTap != null)
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.textTertiaryOnLight,
+                  color: context.colors.textTertiary,
                   size: 22,
                 ),
             ],

@@ -11,6 +11,7 @@ import '../features/auth/screens/not_authorized_screen.dart';
 import '../features/bookings/screens/booking_detail_screen.dart';
 import '../features/bookings/screens/bookings_queue_screen.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
+import '../features/faqs/screens/admin_faqs_screen.dart';
 import '../features/finance/screens/finance_screen.dart';
 import '../features/users/screens/user_detail_screen.dart';
 import '../features/users/screens/users_list_screen.dart';
@@ -81,6 +82,10 @@ final adminRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AdminRoutes.finance,
         builder: (_, __) => const FinanceScreen(),
+      ),
+      GoRoute(
+        path: AdminRoutes.faqs,
+        builder: (_, __) => const AdminFaqsScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

@@ -9,6 +9,7 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Soft-pink failure screen shown when payment fails. The booking slot is
 /// held for 15 minutes so the user can retry.
@@ -82,7 +83,7 @@ class _PaymentFailureScreenState
                 text: TextSpan(
                   style: AppTextStyles.brandHuge.copyWith(
                     fontSize: 32,
-                    color: AppColors.textPrimaryOnLight,
+                    color: const Color(0xFF1A1A22),
                     height: 1.2,
                   ),
                   children: [
@@ -105,7 +106,7 @@ class _PaymentFailureScreenState
                 "Don't worry — your booking is held. You can try again in a moment.",
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textSecondaryOnLight,
+                  color: const Color(0xFF5E5E68),
                   height: 1.5,
                 ),
               ),
@@ -143,7 +144,7 @@ class _PaymentFailureScreenState
                       'Insufficient funds in the linked UPI account. '
                       'No amount was deducted.',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textPrimaryOnLight,
+                        color: const Color(0xFF1A1A22),
                         height: 1.4,
                       ),
                     ),
@@ -151,7 +152,7 @@ class _PaymentFailureScreenState
                     Text(
                       'CODE: E_INSUFFICIENT_BAL  ·  14:23 IST',
                       style: AppTextStyles.brandFooter.copyWith(
-                        color: AppColors.textTertiaryOnLight,
+                        color: const Color(0xFF9494A0),
                         fontFamily: 'monospace',
                         letterSpacing: 1.2,
                       ),
@@ -173,7 +174,7 @@ class _PaymentFailureScreenState
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
+                        color: const Color(0xFFEDE4FA),
                         borderRadius:
                             BorderRadius.circular(AppSpacing.radiusSm),
                       ),
@@ -193,7 +194,7 @@ class _PaymentFailureScreenState
                             'Your slot is reserved for 15 minutes',
                             style: AppTextStyles.brandHuge.copyWith(
                               fontSize: 15,
-                              color: AppColors.textPrimaryOnLight,
+                              color: const Color(0xFF1A1A22),
                               height: 1.2,
                             ),
                           ),
@@ -202,7 +203,7 @@ class _PaymentFailureScreenState
                             'Try a different payment method or top up '
                             'your account and retry.',
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondaryOnLight,
+                              color: const Color(0xFF5E5E68),
                               height: 1.4,
                             ),
                           ),
@@ -259,7 +260,7 @@ class _PaymentFailureScreenState
                 child: OutlinedButton(
                   onPressed: _tryAgain,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textPrimaryOnLight,
+                    foregroundColor: const Color(0xFF1A1A22),
                     backgroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 56),
                     side: BorderSide(
@@ -273,7 +274,7 @@ class _PaymentFailureScreenState
                   child: Text(
                     'Change payment method',
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.textPrimaryOnLight,
+                      color: const Color(0xFF1A1A22),
                       fontSize: 16,
                     ),
                   ),
@@ -292,7 +293,7 @@ class _PaymentFailureScreenState
                       Text(
                         'NEED HELP?  ',
                         style: AppTextStyles.brandFooter.copyWith(
-                          color: AppColors.textTertiaryOnLight,
+                          color: const Color(0xFF9494A0),
                           letterSpacing: 2,
                           fontWeight: FontWeight.w700,
                         ),

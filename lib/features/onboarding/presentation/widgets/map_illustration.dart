@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Illustration for onboarding slide 01 — discover locations.
 /// Stylized city map with purple pin markers and a "200+ SPOTS" stat badge.
@@ -21,7 +22,7 @@ class MapIllustration extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.cardLight,
+                  color: context.colors.card,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.2),

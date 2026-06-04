@@ -37,4 +37,10 @@ class AppRoutes {
 
   // Profile sub-screens
   static const String personalInfo = '/personal-info';
+
+  // Notifications inbox
+  static const String notifications = '/notifications';
+
+  // Help & FAQs
+  static const String help = '/help';
 }

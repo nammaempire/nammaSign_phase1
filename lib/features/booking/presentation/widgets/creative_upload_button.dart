@@ -4,6 +4,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/widgets/upload_area.dart' show DottedBorder;
+import '../../../../app/theme/app_palette.dart';
 
 /// Dashed upload zone with image + video icon affordances.
 /// Used on both campaign forms as the "Add / Replace creative" CTA.
@@ -35,7 +36,7 @@ class CreativeUploadButton extends StatelessWidget {
           horizontal: AppSpacing.lg,
         ),
         decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
         child: Column(
@@ -53,14 +54,14 @@ class CreativeUploadButton extends StatelessWidget {
               title,
               style: AppTextStyles.brandHuge.copyWith(
                 fontSize: 15,
-                color: AppColors.textPrimaryOnLight,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               subtitle,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textTertiaryOnLight,
+                color: context.colors.textTertiary,
               ),
               textAlign: TextAlign.center,
             ),

@@ -25,6 +25,9 @@ import '../../features/signup/presentation/screens/corporate_signup_screen.dart'
 import '../../features/signup/presentation/screens/individual_signup_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/main_shell.dart';
+import '../../features/help/presentation/screens/help_screen.dart';
+import '../../features/notifications/data/fcm_bootstrap.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/profile/presentation/screens/personal_info_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -175,6 +178,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.personalInfo,
         builder: (_, __) => const PersonalInfoScreen(),
       ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (_, __) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.help,
+        builder: (_, __) => const HelpScreen(),
+      ),
 
       StatefulShellRoute.indexedStack(
         builder: (_, __, navigationShell) =>
@@ -238,6 +249,19 @@ final routerProvider = Provider<GoRouter>((ref) {
   // isSetupComplete flips and the redirect carries them to /home.
   ref.listen(userProfileProvider, (prev, next) {
     router.refresh();
+  });
+
+  // Deep-link a notification tap to its booking's status page. We wait
+  // until the user is on a non-auth route to avoid yanking them out of
+  // login halfway through.
+  ref.listen<String?>(pendingNotificationBookingIdProvider, (prev, next) {
+    if (next == null || next.isEmpty) return;
+    final signedIn = ref.read(authStateProvider).asData?.value != null;
+    if (!signedIn) return;
+    router.push(AppRoutes.campaignStatusFor(next));
+    // Clear so the same tap isn't replayed if profile/user changes
+    // trigger another refresh.
+    ref.read(pendingNotificationBookingIdProvider.notifier).state = null;
   });
 
   return router;

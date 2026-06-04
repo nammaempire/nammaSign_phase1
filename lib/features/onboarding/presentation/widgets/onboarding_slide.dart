@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Data class for a single onboarding slide.
 class OnboardingSlideData {
@@ -37,7 +38,7 @@ class OnboardingSlide extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
             ),
             child: data.illustration,
@@ -50,7 +51,7 @@ class OnboardingSlide extends StatelessWidget {
             data.titleLine1,
             style: AppTextStyles.brandHuge.copyWith(
               fontSize: 30,
-              color: AppColors.textPrimaryOnLight,
+              color: context.colors.textPrimary,
               height: 1.1,
             ),
           ),
@@ -69,7 +70,7 @@ class OnboardingSlide extends StatelessWidget {
           Text(
             data.description,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textSecondaryOnLight,
+              color: context.colors.textSecondary,
               height: 1.5,
             ),
           ),

@@ -13,6 +13,7 @@ import '../../../home/domain/billboard_listing.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/booking_top_bar.dart';
 import '../widgets/selected_board_card.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Step 1 of the booking flow. Shows the selected billboard at the top,
 /// then asks the user whether the booking is corporate or individual.
@@ -33,14 +34,6 @@ class _BookingAccountTypeScreenState
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
     // Seed the draft once on first build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(bookingProvider.notifier).start(widget.listing);
@@ -64,7 +57,7 @@ class _BookingAccountTypeScreenState
     final selected = draft.bookingType ?? AccountType.corporate;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -83,7 +76,7 @@ class _BookingAccountTypeScreenState
                       'How is this ',
                       style: AppTextStyles.brandHuge.copyWith(
                         fontSize: 30,
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                         height: 1.2,
                       ),
                     ),
@@ -104,7 +97,7 @@ class _BookingAccountTypeScreenState
                       'Pick the account paying for this campaign. '
                       'Determines verification & invoicing.',
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textSecondaryOnLight,
+                        color: context.colors.textSecondary,
                         height: 1.5,
                       ),
                     ),
@@ -214,7 +207,7 @@ class _TypeCard extends StatelessWidget {
         child: GradientBorderBox(
           borderRadius: AppSpacing.radiusLg,
           borderWidth: selected ? 1.8 : 1.0,
-          innerColor: selected ? AppColors.surfaceLight : Colors.white,
+          innerColor: selected ? context.colors.surface : context.colors.card,
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -227,7 +220,7 @@ class _TypeCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: selected
                           ? Colors.white
-                          : AppColors.surfaceLight,
+                          : context.colors.surface,
                       borderRadius:
                           BorderRadius.circular(AppSpacing.radiusSm),
                     ),
@@ -246,7 +239,7 @@ class _TypeCard extends StatelessWidget {
                       border: Border.all(
                         color: selected
                             ? AppColors.primary
-                            : AppColors.textTertiaryOnLight,
+                            : context.colors.textTertiary,
                         width: 1.5,
                       ),
                     ),
@@ -258,14 +251,14 @@ class _TypeCard extends StatelessWidget {
                 title,
                 style: AppTextStyles.brandHuge.copyWith(
                   fontSize: 18,
-                  color: AppColors.textPrimaryOnLight,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondaryOnLight,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],

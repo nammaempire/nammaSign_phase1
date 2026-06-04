@@ -5,6 +5,7 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Bottom-tab shell used as the root for all signed-in routes.
 /// Three tabs per design: Home, History, Profile.
@@ -37,13 +38,13 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: navigationShell,
       bottomNavigationBar: SafeArea(
         top: false,
         child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.backgroundLight,
+          decoration: BoxDecoration(
+            color: context.colors.bg,
             border: Border(
               top: BorderSide(color: AppColors.divider, width: 0.5),
             ),
@@ -93,7 +94,7 @@ class _TabButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = active
         ? AppColors.primary
-        : AppColors.textTertiaryOnLight;
+        : context.colors.textTertiary;
     return InkWell(
       onTap: onTap,
       child: Padding(

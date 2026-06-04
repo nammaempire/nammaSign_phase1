@@ -8,6 +8,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/uploads/upload_limits.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/widgets/file_upload_slot.dart';
 import '../../../../core/widgets/india_flag.dart';
@@ -19,6 +20,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../user/domain/user_profile.dart';
 import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../widgets/signup_scaffold.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// "A few personal details." — individual account signup form.
 class IndividualSignupScreen extends ConsumerStatefulWidget {
@@ -50,10 +52,20 @@ class _IndividualSignupScreenState
 
   Future<PickedFile?> _pickFile() async {
     try {
-      return await PickedFile.pick(
-        extensions: ['pdf', 'jpg', 'jpeg', 'png'],
-        label: 'documents',
+      final file = await PickedFile.pick(
+        extensions: UploadLimits.kycExtensions,
+        label: 'KYC documents',
       );
+      if (file == null) return null;
+      final error = file.validate(
+        allowedExtensions: UploadLimits.kycExtensions,
+        maxBytes: UploadLimits.kycMaxBytes,
+      );
+      if (error != null) {
+        if (mounted) context.showErrorSnack(error);
+        return null;
+      }
+      return file;
     } catch (e, st) {
       appLogger.e('File pick failed', error: e, stackTrace: st);
       if (mounted) context.showErrorSnack('Could not open file picker');
@@ -245,7 +257,7 @@ class _IndividualSignupScreenState
                   file: _aadhaarFront,
                   onPickFile: _pickAadhaarFront,
                   emptyTitle: 'Upload Aadhaar front',
-                  emptySubtitle: 'JPG or PDF  ·  max 5MB',
+                  emptySubtitle: UploadLimits.kycHint,
                   filledStatus: UploadStatus.uploaded,
                   filledIcon: Icons.image_outlined,
                   onRemove: () => setState(() => _aadhaarFront = null),
@@ -255,7 +267,7 @@ class _IndividualSignupScreenState
                   file: _aadhaarBack,
                   onPickFile: _pickAadhaarBack,
                   emptyTitle: 'Upload Aadhaar back',
-                  emptySubtitle: 'JPG or PDF  ·  max 5MB',
+                  emptySubtitle: UploadLimits.kycHint,
                   filledStatus: UploadStatus.uploaded,
                   filledIcon: Icons.image_outlined,
                   onRemove: () => setState(() => _aadhaarBack = null),
@@ -323,7 +335,7 @@ class _PhoneInputWithFlagState extends State<_PhoneInputWithFlag> {
             Text(
               '+91',
               style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textPrimaryOnLight,
+                color: context.colors.textPrimary,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -345,19 +357,19 @@ class _PhoneInputWithFlagState extends State<_PhoneInputWithFlag> {
                   LengthLimitingTextInputFormatter(11),
                   _PhoneSpacerFormatter(),
                 ],
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimaryOnLight,
+                  color: context.colors.textPrimary,
                   letterSpacing: 0.5,
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   filled: false,
                   fillColor: Colors.transparent,
                   hintText: '98765 43210',
                   hintStyle: TextStyle(
                     fontSize: 16,
-                    color: AppColors.textTertiaryOnLight,
+                    color: context.colors.textTertiary,
                   ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,

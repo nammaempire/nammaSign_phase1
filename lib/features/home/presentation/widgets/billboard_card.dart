@@ -5,6 +5,7 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
 import '../../domain/billboard_listing.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Single billboard listing card on the Local tab.
 ///
@@ -286,7 +287,7 @@ class _CardFooter extends StatelessWidget {
             '${listing.location}  ·  ${listing.boardType}',
             style: AppTextStyles.brandHuge.copyWith(
               fontSize: 18,
-              color: AppColors.textPrimaryOnLight,
+              color: context.colors.textPrimary,
               height: 1.2,
             ),
           ),
@@ -297,7 +298,7 @@ class _CardFooter extends StatelessWidget {
           Text(
             listing.fullAddress,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondaryOnLight,
+              color: context.colors.textSecondary,
               height: 1.4,
             ),
             maxLines: 2,
@@ -312,13 +313,13 @@ class _CardFooter extends StatelessWidget {
               Icon(
                 Icons.person_outline_rounded,
                 size: 16,
-                color: AppColors.textSecondaryOnLight,
+                color: context.colors.textSecondary,
               ),
               const SizedBox(width: 4),
               Text(
                 '${_formatViews(listing.viewsPerDay)} views/day',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondaryOnLight,
+                  color: context.colors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -339,7 +340,7 @@ class _CardFooter extends StatelessWidget {
                 disabledBackgroundColor: AppColors.primary.withValues(
                   alpha: 0.18,
                 ),
-                disabledForegroundColor: AppColors.textPrimaryOnLight
+                disabledForegroundColor: context.colors.textPrimary
                     .withValues(alpha: 0.55),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
@@ -353,7 +354,7 @@ class _CardFooter extends StatelessWidget {
                     fullyBooked ? 'Fully booked' : 'Book my slot',
                     style: AppTextStyles.labelLarge.copyWith(
                       color: fullyBooked
-                          ? AppColors.textTertiaryOnLight
+                          ? context.colors.textTertiary
                           : AppColors.textPrimary,
                       fontSize: 15,
                     ),

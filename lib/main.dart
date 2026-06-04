@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'core/utils/logger.dart';
 import 'firebase_options.dart';
+
+/// Top-level background message handler. Runs in its own isolate when the
+/// app is fully killed and a push arrives — so it MUST be a top-level
+/// function and MUST initialize Firebase on its own.
+///
+/// We don't render anything here; the Cloud Function already wrote the
+/// in-app notification row, so when the user opens the app they'll see
+/// it in the bell. This handler just exists so Android shows the system
+/// banner reliably.
+@pragma('vm:entry-point')
+Future<void> _onBackgroundMessage(RemoteMessage message) async {
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (_) {
+    // Already initialized — fine.
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +60,10 @@ Future<void> main() async {
     runApp(const _FirebaseInitErrorApp());
     return;
   }
+
+  // Register the FCM background handler BEFORE the app starts so a push
+  // arriving in the kill-state isolate can wake the handler up.
+  FirebaseMessaging.onBackgroundMessage(_onBackgroundMessage);
 
   runApp(const ProviderScope(child: App()));
 }

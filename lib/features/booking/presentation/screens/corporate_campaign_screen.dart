@@ -10,6 +10,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/uploads/upload_limits.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/widgets/labeled_form_field.dart';
 import '../../../../core/widgets/outlined_input.dart';
@@ -19,6 +20,7 @@ import '../widgets/booking_top_bar.dart';
 import '../widgets/creative_preview.dart';
 import '../widgets/creative_upload_button.dart';
 import '../widgets/duration_selector.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Step 2 — corporate flow. Read-only organisation + campaign ID, then
 /// editable manager / title / description, duration (7/15/30), creative
@@ -42,14 +44,6 @@ class _CorporateCampaignScreenState
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
     // Seed controllers from the booking draft + the user's real profile.
     final draft = ref.read(bookingProvider);
     final corp = ref.read(userProfileProvider).valueOrNull?.corporate;
@@ -77,12 +71,26 @@ class _CorporateCampaignScreenState
   }
 
   Future<void> _pick({required bool isVideo}) async {
+    final allowed = isVideo
+        ? UploadLimits.creativeVideoExtensions
+        : UploadLimits.creativeImageExtensions;
+    final maxBytes = isVideo
+        ? UploadLimits.creativeVideoMaxBytes
+        : UploadLimits.creativeImageMaxBytes;
     try {
       final file = await PickedFile.pick(
-        extensions: isVideo ? ['mp4', 'mov'] : ['jpg', 'jpeg', 'png'],
+        extensions: allowed,
         label: isVideo ? 'videos' : 'images',
       );
       if (file == null) return;
+      final error = file.validate(
+        allowedExtensions: allowed,
+        maxBytes: maxBytes,
+      );
+      if (error != null) {
+        if (mounted) context.showErrorSnack(error);
+        return;
+      }
       ref
           .read(bookingProvider.notifier)
           .setCreative(file, isVideo: isVideo);
@@ -101,7 +109,7 @@ class _CorporateCampaignScreenState
     final draft = ref.watch(bookingProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -117,7 +125,7 @@ class _CorporateCampaignScreenState
                       'Your ',
                       style: AppTextStyles.brandHuge.copyWith(
                         fontSize: 30,
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                         height: 1.2,
                       ),
                     ),
@@ -134,7 +142,7 @@ class _CorporateCampaignScreenState
                       "Tell us what's running, how long, and upload "
                       'your creative.',
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textSecondaryOnLight,
+                        color: context.colors.textSecondary,
                       ),
                     ),
 

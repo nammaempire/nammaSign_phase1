@@ -4,6 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/app_text_styles.dart';
 import 'gradient_border_box.dart';
+import '../../app/theme/app_palette.dart';
 
 enum UploadStatus { uploaded, verified, failed }
 
@@ -45,7 +46,7 @@ class UploadedFileCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceLight,
+                    color: context.colors.surface,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
                   alignment: Alignment.center,
@@ -59,7 +60,7 @@ class UploadedFileCard extends StatelessWidget {
                       Text(
                         fileName,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textPrimaryOnLight,
+                          color: context.colors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                         maxLines: 1,
@@ -71,19 +72,19 @@ class UploadedFileCard extends StatelessWidget {
                           Text(
                             sizeLabel,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textTertiaryOnLight,
+                              color: context.colors.textTertiary,
                             ),
                           ),
                           Text(
                             '  ·  ',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textTertiaryOnLight,
+                              color: context.colors.textTertiary,
                             ),
                           ),
                           Text(
                             _statusLabel(status),
                             style: AppTextStyles.brandFooter.copyWith(
-                              color: AppColors.textTertiaryOnLight,
+                              color: context.colors.textTertiary,
                               letterSpacing: 1.5,
                             ),
                           ),

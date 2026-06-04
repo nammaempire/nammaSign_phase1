@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Horizontal filter chip used in the history header.
 ///
@@ -24,8 +25,11 @@ class StatusFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Active chip stays the brand purple regardless of theme — that's the
+    // selection signal. Inactive chip uses the theme-aware card surface so
+    // it disappears into the page in dark mode.
     return Material(
-      color: active ? AppColors.badgeDark : Colors.white,
+      color: active ? AppColors.primary : context.colors.card,
       borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
       child: InkWell(
         onTap: onTap,
@@ -49,9 +53,7 @@ class StatusFilterChip extends StatelessWidget {
               Text(
                 label,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: active
-                      ? AppColors.textPrimary
-                      : AppColors.textPrimaryOnLight,
+                  color: active ? Colors.white : context.colors.textPrimary,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -62,16 +64,14 @@ class StatusFilterChip extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: active
-                      ? AppColors.primary
-                      : AppColors.surfaceLight,
+                      ? Colors.white.withValues(alpha: 0.22)
+                      : context.colors.surface,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   '$count',
                   style: AppTextStyles.brandFooter.copyWith(
-                    color: active
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondaryOnLight,
+                    color: active ? Colors.white : context.colors.textSecondary,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1,
                   ),

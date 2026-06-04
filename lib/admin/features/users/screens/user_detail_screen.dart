@@ -9,6 +9,7 @@ import '../../../../features/history/domain/booking.dart';
 import '../../../../features/history/presentation/providers/bookings_provider.dart';
 import '../../../../features/user/domain/user_profile.dart';
 import '../../../../features/user/presentation/providers/user_profile_provider.dart';
+import '../data/admin_delete_user_repository.dart';
 import '../../../app/admin_routes.dart';
 import '../../../shared/theme/admin_theme.dart';
 import '../../../shared/widgets/admin_shell.dart';
@@ -435,6 +436,218 @@ class _ActionsPanelState extends ConsumerState<_ActionsPanel> {
               ],
             ],
           ),
+        ),
+        const SizedBox(height: 16),
+        _DangerZone(user: u),
+      ],
+    );
+  }
+}
+
+/// Hard-delete the customer's account. Lives in a separate card with a
+/// red outline so it's visually quarantined from the routine KYC actions
+/// above. Requires the admin to type the customer's email to confirm.
+class _DangerZone extends ConsumerWidget {
+  const _DangerZone({required this.user});
+  final UserProfile user;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.all(AdminSpacing.xl),
+      decoration: BoxDecoration(
+        color: AdminColors.dangerBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AdminColors.danger),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'DANGER ZONE',
+            style: AdminText.caps.copyWith(color: AdminColors.danger),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Hard-deletes the account, KYC docs, bookings, and FCM tokens.'
+            " The user can sign back in with the same phone, but they'll"
+            ' come back as a brand-new account with no history.',
+            style: AdminText.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: AdminColors.danger,
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.delete_forever_outlined, size: 18),
+            label: const Text('Delete account'),
+            onPressed: () => _confirmAdminDelete(context, ref, user),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _confirmAdminDelete(
+  BuildContext context,
+  WidgetRef ref,
+  UserProfile user,
+) async {
+  // We confirm using whichever stable identifier we have — email if the
+  // user has one, otherwise phone number. That way the admin types in
+  // something they can verify on the customer card on the left.
+  final expected = user.email?.isNotEmpty == true
+      ? user.email!
+      : (user.phone ?? user.uid);
+  final identifierKind = user.email?.isNotEmpty == true
+      ? 'email'
+      : (user.phone?.isNotEmpty == true ? 'phone number' : 'user id');
+
+  final confirmed = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => _AdminDeleteDialog(
+      expected: expected,
+      identifierKind: identifierKind,
+      displayName: user.bestDisplayName,
+    ),
+  );
+  if (confirmed != true) return;
+  if (!context.mounted) return;
+
+  showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => AlertDialog(
+      content: Row(
+        children: const [
+          SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          SizedBox(width: 12),
+          Text('Deleting account…'),
+        ],
+      ),
+    ),
+  );
+
+  try {
+    await ref
+        .read(adminDeleteUserRepositoryProvider)
+        .deleteUser(user.uid);
+    if (!context.mounted) return;
+    Navigator.of(context, rootNavigator: true).pop(); // dismiss progress
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${user.bestDisplayName} deleted.')),
+    );
+    // Pop back to the users list since the detail page is now stale.
+    context.go(AdminRoutes.users);
+  } catch (e) {
+    if (!context.mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Couldn't delete user"),
+        content: Text('$e'),
+        actions: [
+          TextButton(
+            onPressed: () =>
+                Navigator.of(context, rootNavigator: true).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminDeleteDialog extends StatefulWidget {
+  const _AdminDeleteDialog({
+    required this.expected,
+    required this.identifierKind,
+    required this.displayName,
+  });
+
+  final String expected;
+  final String identifierKind;
+  final String displayName;
+
+  @override
+  State<_AdminDeleteDialog> createState() => _AdminDeleteDialogState();
+}
+
+class _AdminDeleteDialogState extends State<_AdminDeleteDialog> {
+  final _ctrl = TextEditingController();
+  bool get _canConfirm =>
+      _ctrl.text.trim().toLowerCase() == widget.expected.trim().toLowerCase();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: const Icon(
+        Icons.warning_amber_rounded,
+        size: 36,
+        color: AdminColors.danger,
+      ),
+      title: const Text('Delete this account?'),
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "You're about to permanently delete "
+              '${widget.displayName}\'s account. Their profile, KYC '
+              'documents, notifications, and FCM tokens will be removed. '
+              'Active bookings will be cancelled.',
+              style: AdminText.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Type the customer\'s ${widget.identifierKind} to confirm:',
+              style: AdminText.bodySmall,
+            ),
+            const SizedBox(height: 4),
+            SelectableText(
+              widget.expected,
+              style: AdminText.label,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _ctrl,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: widget.expected,
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: AdminColors.danger),
+          onPressed:
+              _canConfirm ? () => Navigator.of(context).pop(true) : null,
+          child: const Text('Delete forever'),
         ),
       ],
     );

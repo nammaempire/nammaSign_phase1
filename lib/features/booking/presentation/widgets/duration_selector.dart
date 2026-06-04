@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// 3-card duration picker (e.g. 7 / 15 / 30 days).
 /// Selected card flips to dark fill + white text; unselected stay outlined.
@@ -58,7 +59,7 @@ class _DurationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? AppColors.badgeDark : Colors.white,
+      color: selected ? AppColors.primary : context.colors.card,
       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       child: InkWell(
         onTap: onTap,
@@ -81,7 +82,7 @@ class _DurationCard extends StatelessWidget {
                   fontSize: 24,
                   color: selected
                       ? AppColors.textPrimary
-                      : AppColors.textPrimaryOnLight,
+                      : context.colors.textPrimary,
                   height: 1,
                 ),
               ),
@@ -91,7 +92,7 @@ class _DurationCard extends StatelessWidget {
                 style: AppTextStyles.brandFooter.copyWith(
                   color: selected
                       ? AppColors.textPrimary.withValues(alpha: 0.8)
-                      : AppColors.textTertiaryOnLight,
+                      : context.colors.textTertiary,
                   letterSpacing: 2,
                 ),
               ),

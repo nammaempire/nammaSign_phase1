@@ -201,6 +201,18 @@ class _SideRail extends StatelessWidget {
             onTap: (ctx) => ctx.go(AdminRoutes.finance),
           ),
 
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+            child: Text('CONTENT', style: AdminText.caps),
+          ),
+          _NavItem(
+            icon: Icons.help_outline_rounded,
+            label: 'Help & FAQs',
+            selected: section == AdminSection.faqs,
+            onTap: (ctx) => ctx.go(AdminRoutes.faqs),
+          ),
+
           const Spacer(),
 
           // Sign-out

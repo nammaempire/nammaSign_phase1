@@ -4,6 +4,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/string_extensions.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Profile header — purple gradient avatar with initials, green verified
 /// check, name, and the "TYPE · ORG" line underneath.
@@ -64,7 +65,7 @@ class ProfileHeader extends StatelessWidget {
                       color: AppColors.success,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.backgroundLight,
+                        color: context.colors.bg,
                         width: 2.5,
                       ),
                     ),
@@ -86,7 +87,7 @@ class ProfileHeader extends StatelessWidget {
           name,
           style: AppTextStyles.brandHuge.copyWith(
             fontSize: 22,
-            color: AppColors.textPrimaryOnLight,
+            color: context.colors.textPrimary,
           ),
         ),
 
@@ -98,7 +99,7 @@ class ProfileHeader extends StatelessWidget {
             Text(
               accountTypeLabel.toUpperCase(),
               style: AppTextStyles.brandFooter.copyWith(
-                color: AppColors.textTertiaryOnLight,
+                color: context.colors.textTertiary,
                 letterSpacing: 2,
                 fontWeight: FontWeight.w700,
               ),
@@ -110,7 +111,7 @@ class ProfileHeader extends StatelessWidget {
               Text(
                 '  ·  ',
                 style: AppTextStyles.brandFooter.copyWith(
-                  color: AppColors.textTertiaryOnLight,
+                  color: context.colors.textTertiary,
                 ),
               ),
               Flexible(

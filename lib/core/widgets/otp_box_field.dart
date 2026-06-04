@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../app/theme/app_palette.dart';
 
 /// 6-box OTP input matching the design:
 ///   - filled box: lavender bg + 1.5px purple border + bold purple digit
@@ -153,7 +154,7 @@ class _OtpBox extends StatelessWidget {
       height: 56,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: isFilled ? AppColors.surfaceLight : Colors.white,
+        color: isFilled ? context.colors.surface : Colors.white,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         border: Border.all(
           color: (isFilled || isFocused)

@@ -6,6 +6,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import 'booking_progress_bar.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// BACK + STEP X/3 row, with progress bar underneath.
 class BookingTopBar extends StatelessWidget {
@@ -35,16 +36,16 @@ class BookingTopBar extends StatelessWidget {
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.chevron_left_rounded,
                         size: 20,
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                       ),
                       const SizedBox(width: 2),
                       Text(
                         'BACK',
                         style: AppTextStyles.brandFooter.copyWith(
-                          color: AppColors.textPrimaryOnLight,
+                          color: context.colors.textPrimary,
                           letterSpacing: 2,
                         ),
                       ),
@@ -56,7 +57,7 @@ class BookingTopBar extends StatelessWidget {
               Text(
                 'STEP ',
                 style: AppTextStyles.brandFooter.copyWith(
-                  color: AppColors.textTertiaryOnLight,
+                  color: context.colors.textTertiary,
                   letterSpacing: 2,
                 ),
               ),
@@ -71,7 +72,7 @@ class BookingTopBar extends StatelessWidget {
               Text(
                 ' / 3',
                 style: AppTextStyles.brandFooter.copyWith(
-                  color: AppColors.textTertiaryOnLight,
+                  color: context.colors.textTertiary,
                   letterSpacing: 2,
                 ),
               ),

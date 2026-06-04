@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../app/theme/app_palette.dart';
 
 /// Field label row + child input below.
 ///
@@ -32,7 +33,7 @@ class LabeledFormField extends StatelessWidget {
             Text(
               label,
               style: AppTextStyles.brandFooter.copyWith(
-                color: AppColors.textTertiaryOnLight,
+                color: context.colors.textTertiary,
                 letterSpacing: 2,
               ),
             ),

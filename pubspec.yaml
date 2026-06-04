@@ -50,6 +50,12 @@ dependencies:
   cross_file: ^0.3.4+2
   video_player: ^2.9.2
 
+  # ---- Sharing + PDF invoice ----
+  # All Swift Package Manager friendly so we don't reintroduce CocoaPods.
+  share_plus: ^10.1.2          # Native share sheet (iOS + Android)
+  pdf: ^3.11.1                 # PDF document builder (pure Dart, no native)
+  path_provider: ^2.1.4        # Temp dir for the generated PDF file
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

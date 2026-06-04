@@ -12,6 +12,7 @@ import '../../domain/booking.dart';
 import '../providers/bookings_provider.dart';
 import '../widgets/booking_card.dart';
 import '../widgets/status_filter_chip.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// History tab — live list of the signed-in user's bookings, with
 /// status filter chips along the top.
@@ -29,14 +30,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
   }
 
   List<Booking> _applyFilter(List<Booking> all) {
@@ -54,13 +47,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final bookingsAsync = ref.watch(userBookingsStreamProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Title + search
+            // Title row
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.xxl,
@@ -69,44 +62,20 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 AppSpacing.md,
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Your ',
-                          style: AppTextStyles.brandHuge.copyWith(
-                            fontSize: 28,
-                            color: AppColors.textPrimaryOnLight,
-                          ),
-                        ),
-                        Text(
-                          'history',
-                          style: AppTextStyles.brandHugeItalic.copyWith(
-                            fontSize: 28,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    'Your ',
+                    style: AppTextStyles.brandHuge.copyWith(
+                      fontSize: 28,
+                      color: context.colors.textPrimary,
                     ),
                   ),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () =>
-                          context.showSnack('Search history (Phase 1b)'),
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusMd),
-                      child: const SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: Icon(
-                          Icons.search_rounded,
-                          color: AppColors.textPrimaryOnLight,
-                          size: 22,
-                        ),
-                      ),
+                  Text(
+                    'history',
+                    style: AppTextStyles.brandHugeItalic.copyWith(
+                      fontSize: 28,
+                      color: AppColors.primary,
                     ),
                   ),
                 ],
@@ -132,7 +101,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         Text(
                           "Couldn't load your history",
                           style: AppTextStyles.h3.copyWith(
-                            color: AppColors.textPrimaryOnLight,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
@@ -140,7 +109,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                           e.toString(),
                           textAlign: TextAlign.center,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textTertiaryOnLight,
+                            color: context.colors.textTertiary,
                           ),
                         ),
                       ],
@@ -209,7 +178,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                         : 'No bookings in this category.',
                                     textAlign: TextAlign.center,
                                     style: AppTextStyles.bodyLarge.copyWith(
-                                      color: AppColors.textTertiaryOnLight,
+                                      color: context.colors.textTertiary,
                                     ),
                                   ),
                                 ),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_spacing.dart';
+import '../../app/theme/app_palette.dart';
 
 /// Light-themed outlined input field used on signup forms.
 ///
@@ -73,7 +74,7 @@ class _OutlinedInputState extends State<OutlinedInput> {
     final textStyle = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w500,
-      color: AppColors.textPrimaryOnLight,
+      color: context.colors.textPrimary,
       letterSpacing: widget.monospace ? 1 : 0.2,
       fontFamily: widget.monospace ? 'monospace' : null,
     );
@@ -90,7 +91,7 @@ class _OutlinedInputState extends State<OutlinedInput> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: widget.locked ? AppColors.surfaceLight : Colors.white,
+          color: widget.locked ? context.colors.surface : context.colors.card,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           border: Border.all(
             color: widget.locked
@@ -108,7 +109,7 @@ class _OutlinedInputState extends State<OutlinedInput> {
               Icon(
                 widget.leadingIcon,
                 size: 20,
-                color: AppColors.textTertiaryOnLight,
+                color: context.colors.textTertiary,
               ),
               const SizedBox(width: AppSpacing.md),
             ],
@@ -131,7 +132,7 @@ class _OutlinedInputState extends State<OutlinedInput> {
                   fillColor: Colors.transparent,
                   hintText: widget.hint,
                   hintStyle: textStyle.copyWith(
-                    color: AppColors.textTertiaryOnLight,
+                    color: context.colors.textTertiary,
                     fontWeight: FontWeight.w400,
                   ),
                   border: InputBorder.none,

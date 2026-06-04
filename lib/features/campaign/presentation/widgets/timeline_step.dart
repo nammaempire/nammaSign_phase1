@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../app/theme/app_palette.dart';
 
 enum TimelineDotKind {
   /// Solid colored dot (completed / active).
@@ -76,8 +77,8 @@ class TimelineStep extends StatelessWidget {
                     style: AppTextStyles.brandHuge.copyWith(
                       fontSize: 15,
                       color: titleMuted
-                          ? AppColors.textTertiaryOnLight
-                          : AppColors.textPrimaryOnLight,
+                          ? context.colors.textTertiary
+                          : context.colors.textPrimary,
                       height: 1.2,
                     ),
                   ),
@@ -90,7 +91,7 @@ class TimelineStep extends StatelessWidget {
                         child: Text(
                           subtitle,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textTertiaryOnLight,
+                            color: context.colors.textTertiary,
                             height: 1.3,
                           ),
                         ),
@@ -132,7 +133,7 @@ class _Dot extends StatelessWidget {
         color: isFilled ? color : Colors.white,
         shape: BoxShape.circle,
         border: Border.all(
-          color: isFilled ? color : AppColors.textTertiaryOnLight,
+          color: isFilled ? color : context.colors.textTertiary,
           width: isFilled ? 0 : 1.5,
         ),
       ),

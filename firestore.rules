@@ -101,6 +101,22 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ---- HELP FAQs ----
+    // Authored from the admin portal, read by signed-in users on the Help
+    // screen. Only published items are visible to non-admins so admins can
+    // draft answers before exposing them.
+    //
+    // The user-side query MUST filter `where('published', '==', true)` —
+    // otherwise the per-doc list check fails. The admin-side query gets
+    // everything because isAdmin() short-circuits.
+    match /helpFaqs/{faqId} {
+      allow get: if isAdmin() ||
+        (isSignedIn() && resource.data.published == true);
+      allow list: if isAdmin() ||
+        (isSignedIn() && resource.data.published == true);
+      allow write: if isAdmin();
+    }
+
     // ---- ADMIN ----
     // Roster of admin user ids — presence of a doc here grants admin rights
     // (see isAdmin() above). Bootstrap by creating the first doc via the

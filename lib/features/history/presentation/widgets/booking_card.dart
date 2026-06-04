@@ -5,6 +5,7 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
 import '../../domain/booking.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Single booking row card on the history list.
 class BookingCard extends StatelessWidget {
@@ -45,7 +46,7 @@ class BookingCard extends StatelessWidget {
                               booking.campaignTitle,
                               style: AppTextStyles.brandHuge.copyWith(
                                 fontSize: 16,
-                                color: AppColors.textPrimaryOnLight,
+                                color: context.colors.textPrimary,
                                 height: 1.15,
                               ),
                               maxLines: 1,
@@ -62,7 +63,7 @@ class BookingCard extends StatelessWidget {
                       Text(
                         '${booking.location}  ·  ${booking.boardType}',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondaryOnLight,
+                          color: context.colors.textSecondary,
                           height: 1.3,
                         ),
                       ),
@@ -77,7 +78,7 @@ class BookingCard extends StatelessWidget {
                           Text(
                             '·  ${booking.runDateLabel}',
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textTertiaryOnLight,
+                              color: context.colors.textTertiary,
                             ),
                           ),
                         ],
@@ -165,7 +166,7 @@ class _DaysChip extends StatelessWidget {
         Text(
           '$days',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textPrimaryOnLight,
+            color: context.colors.textPrimary,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -173,7 +174,7 @@ class _DaysChip extends StatelessWidget {
         Text(
           days == 1 ? 'day' : 'days',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondaryOnLight,
+            color: context.colors.textSecondary,
           ),
         ),
       ],
@@ -230,7 +231,7 @@ class _PaymentRow extends StatelessWidget {
         Text(
           method,
           style: AppTextStyles.brandFooter.copyWith(
-            color: AppColors.textSecondaryOnLight,
+            color: context.colors.textSecondary,
             letterSpacing: 1.5,
             fontWeight: FontWeight.w700,
           ),
@@ -239,19 +240,19 @@ class _PaymentRow extends StatelessWidget {
           Text(
             '  ·  ',
             style: AppTextStyles.brandFooter.copyWith(
-              color: AppColors.textTertiaryOnLight,
+              color: context.colors.textTertiary,
             ),
           ),
           Icon(
             Icons.check_rounded,
             size: 13,
-            color: AppColors.textSecondaryOnLight,
+            color: context.colors.textSecondary,
           ),
           const SizedBox(width: 2),
           Text(
             'PAID',
             style: AppTextStyles.brandFooter.copyWith(
-              color: AppColors.textSecondaryOnLight,
+              color: context.colors.textSecondary,
               letterSpacing: 1.5,
               fontWeight: FontWeight.w700,
             ),
@@ -287,6 +288,10 @@ class _AdminNoteBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The pink rejection block keeps its branded colors regardless of
+    // theme so it stays visually distinct from regular booking content.
+    // Text colors are pinned to a dark ink so they read against the soft
+    // pink fill in both light AND dark themes.
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -309,7 +314,7 @@ class _AdminNoteBox extends StatelessWidget {
           Text(
             text,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textPrimaryOnLight,
+              color: const Color(0xFF1A1A22),
               height: 1.4,
             ),
           ),

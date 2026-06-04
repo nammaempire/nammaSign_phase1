@@ -13,6 +13,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../../domain/account_type.dart';
 import '../providers/account_type_provider.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// "How will you advertise?" — user picks Corporate or Individual.
 /// Sits between onboarding and login. Persists choice to SharedPreferences
@@ -28,14 +29,6 @@ class _AccountTypeScreenState extends ConsumerState<AccountTypeScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
   }
 
   Future<void> _onContinue() async {
@@ -75,7 +68,7 @@ class _AccountTypeScreenState extends ConsumerState<AccountTypeScreen> {
     final selected = ref.watch(selectedAccountTypeProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -98,16 +91,16 @@ class _AccountTypeScreenState extends ConsumerState<AccountTypeScreen> {
                       padding: const EdgeInsets.all(AppSpacing.sm),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.chevron_left_rounded,
                             size: 20,
-                            color: AppColors.textPrimaryOnLight,
+                            color: context.colors.textPrimary,
                           ),
                           const SizedBox(width: 2),
                           Text(
                             'BACK',
                             style: AppTextStyles.brandFooter.copyWith(
-                              color: AppColors.textPrimaryOnLight,
+                              color: context.colors.textPrimary,
                               letterSpacing: 2,
                             ),
                           ),
@@ -131,7 +124,7 @@ class _AccountTypeScreenState extends ConsumerState<AccountTypeScreen> {
                       child: Text(
                         'SIGN OUT',
                         style: AppTextStyles.brandFooter.copyWith(
-                          color: AppColors.textTertiaryOnLight,
+                          color: context.colors.textTertiary,
                           letterSpacing: 2,
                         ),
                       ),
@@ -153,7 +146,7 @@ class _AccountTypeScreenState extends ConsumerState<AccountTypeScreen> {
                       'How will you',
                       style: AppTextStyles.brandHuge.copyWith(
                         fontSize: 36,
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                         height: 1.1,
                       ),
                     ),
@@ -170,7 +163,7 @@ class _AccountTypeScreenState extends ConsumerState<AccountTypeScreen> {
                       'Choose the account that fits you. You can always '
                       'switch later in profile.',
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textSecondaryOnLight,
+                        color: context.colors.textSecondary,
                         height: 1.5,
                       ),
                     ),
@@ -288,7 +281,7 @@ class _AccountTypeCard extends StatelessWidget {
           borderRadius: AppSpacing.radiusLg,
           borderWidth: selected ? 1.8 : 1.0,
           innerColor:
-              selected ? AppColors.surfaceLight : AppColors.cardLight,
+              selected ? context.colors.surface : context.colors.card,
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,8 +292,8 @@ class _AccountTypeCard extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   color: selected
-                      ? AppColors.cardLight
-                      : AppColors.surfaceLight,
+                      ? context.colors.card
+                      : context.colors.surface,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 ),
                 alignment: Alignment.center,
@@ -321,7 +314,7 @@ class _AccountTypeCard extends StatelessWidget {
                       title,
                       style: AppTextStyles.brandHuge.copyWith(
                         fontSize: 20,
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                         height: 1.1,
                       ),
                     ),
@@ -329,7 +322,7 @@ class _AccountTypeCard extends StatelessWidget {
                     Text(
                       description,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondaryOnLight,
+                        color: context.colors.textSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -348,7 +341,7 @@ class _AccountTypeCard extends StatelessWidget {
                   border: Border.all(
                     color: selected
                         ? AppColors.primary
-                        : AppColors.textTertiaryOnLight,
+                        : context.colors.textTertiary,
                     width: 1.5,
                   ),
                 ),

@@ -35,6 +35,14 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- FCM default channel — matches the channelId set on
+             messages by the Cloud Function (nammasign_bookings).
+             Without this, Android 8+ silently drops banners when the
+             app is killed. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="nammasign_bookings" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

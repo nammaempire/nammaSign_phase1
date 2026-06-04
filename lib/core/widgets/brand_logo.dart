@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../constants/app_constants.dart';
+import '../../app/theme/app_palette.dart';
 
 enum LogoVariant { lockup, mark }
 
@@ -44,7 +45,7 @@ class BrandLogo extends StatelessWidget {
       errorBuilder: (_, __, ___) => _Fallback(
         variant: variant,
         height: h,
-        color: color ?? AppColors.textPrimaryOnLight,
+        color: color ?? context.colors.textPrimary,
       ),
     );
   }
@@ -78,7 +79,7 @@ class _Fallback extends StatelessWidget {
           style: AppTextStyles.brandHuge.copyWith(
             fontSize: height * 0.45,
             color: color.computeLuminance() > 0.5
-                ? AppColors.textPrimaryOnLight
+                ? context.colors.textPrimary
                 : Colors.white,
             letterSpacing: 1,
           ),

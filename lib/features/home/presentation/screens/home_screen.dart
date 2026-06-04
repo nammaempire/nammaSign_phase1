@@ -9,6 +9,7 @@ import '../../domain/billboard_listing.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/local_tab.dart';
 import '../widgets/premium_tab.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Home tab — custom top bar, Local/Premium sub-tabs, and the matching
 /// content for each.
@@ -27,14 +28,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
     _tabs = TabController(length: 2, vsync: this);
     _tabs.addListener(() {
       if (_tabs.indexIsChanging || _tabs.index != _index) {
@@ -52,7 +45,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -140,7 +133,7 @@ class _Tab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: active ? AppColors.primary : Colors.white,
+      color: active ? AppColors.primary : context.colors.card,
       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       child: InkWell(
         onTap: onTap,
@@ -166,9 +159,7 @@ class _Tab extends StatelessWidget {
               Text(
                 label,
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: active
-                      ? AppColors.textPrimary
-                      : AppColors.textPrimaryOnLight,
+                  color: active ? Colors.white : context.colors.textPrimary,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -180,7 +171,7 @@ class _Tab extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: active
                       ? Colors.white.withValues(alpha: 0.25)
-                      : AppColors.surfaceLight,
+                      : context.colors.surface,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -188,7 +179,7 @@ class _Tab extends StatelessWidget {
                   style: AppTextStyles.brandFooter.copyWith(
                     color: active
                         ? AppColors.textPrimary
-                        : AppColors.textSecondaryOnLight,
+                        : context.colors.textSecondary,
                     letterSpacing: 1,
                     fontWeight: FontWeight.w700,
                   ),

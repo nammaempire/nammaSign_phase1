@@ -13,6 +13,7 @@ import '../../../history/domain/booking.dart';
 import '../../../history/presentation/providers/bookings_provider.dart';
 import '../widgets/campaign_status_hero.dart';
 import '../widgets/timeline_step.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// Renders the campaign status for a single booking. Streams the booking
 /// live from Firestore so status changes (admin approval, rejection)
@@ -24,19 +25,11 @@ class CampaignStatusScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
 
     final bookingAsync = ref.watch(bookingByIdProvider(bookingId));
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -50,7 +43,7 @@ class CampaignStatusScreen extends ConsumerWidget {
                     "Couldn't load campaign\n$e",
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textTertiaryOnLight,
+                      color: context.colors.textTertiary,
                     ),
                   ),
                 ),
@@ -60,7 +53,7 @@ class CampaignStatusScreen extends ConsumerWidget {
                       child: Text(
                         'Booking not found.',
                         style: AppTextStyles.bodyLarge.copyWith(
-                          color: AppColors.textTertiaryOnLight,
+                          color: context.colors.textTertiary,
                         ),
                       ),
                     );
@@ -107,16 +100,16 @@ class _TopBar extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.sm),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.chevron_left_rounded,
                     size: 20,
-                    color: AppColors.textPrimaryOnLight,
+                    color: context.colors.textPrimary,
                   ),
                   const SizedBox(width: 2),
                   Text(
                     'BACK',
                     style: AppTextStyles.brandFooter.copyWith(
-                      color: AppColors.textPrimaryOnLight,
+                      color: context.colors.textPrimary,
                       letterSpacing: 2,
                     ),
                   ),
@@ -127,10 +120,10 @@ class _TopBar extends StatelessWidget {
           const Spacer(),
           IconButton(
             onPressed: () => context.showSnack('Campaign menu (Phase 1b)'),
-            icon: const Icon(
+            icon: Icon(
               Icons.more_vert_rounded,
               size: 20,
-              color: AppColors.textPrimaryOnLight,
+              color: context.colors.textPrimary,
             ),
           ),
         ],
@@ -182,7 +175,7 @@ class _UnderReviewBody extends StatelessWidget {
               textAlign: TextAlign.center,
               text: TextSpan(
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textSecondaryOnLight,
+                  color: context.colors.textSecondary,
                   height: 1.5,
                 ),
                 children: [
@@ -192,7 +185,7 @@ class _UnderReviewBody extends StatelessWidget {
                   TextSpan(
                     text: '2 hours',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.textPrimaryOnLight,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -429,7 +422,7 @@ class _InfoRow extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.brandFooter.copyWith(
-              color: AppColors.textTertiaryOnLight,
+              color: context.colors.textTertiary,
               letterSpacing: 2,
               fontWeight: FontWeight.w700,
             ),
@@ -440,7 +433,7 @@ class _InfoRow extends StatelessWidget {
               : Text(
                   value!,
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textPrimaryOnLight,
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -521,7 +514,7 @@ class _NeedsChangesBody extends StatelessWidget {
                     Text(
                       '  ·  ',
                       style: AppTextStyles.brandFooter.copyWith(
-                        color: AppColors.textTertiaryOnLight,
+                        color: context.colors.textTertiary,
                         letterSpacing: 2,
                       ),
                     ),
@@ -539,7 +532,7 @@ class _NeedsChangesBody extends StatelessWidget {
                 Text(
                   '"$feedback"',
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textPrimaryOnLight,
+                    color: context.colors.textPrimary,
                     height: 1.5,
                   ),
                 ),
@@ -554,7 +547,7 @@ class _NeedsChangesBody extends StatelessWidget {
                     Text(
                       '27 Oct  ·  16:12',
                       style: AppTextStyles.brandFooter.copyWith(
-                        color: AppColors.textTertiaryOnLight,
+                        color: context.colors.textTertiary,
                         fontFamily: 'monospace',
                         letterSpacing: 1.5,
                       ),
@@ -564,7 +557,7 @@ class _NeedsChangesBody extends StatelessWidget {
                       Text(
                         'RULE: $ruleCode',
                         style: AppTextStyles.brandFooter.copyWith(
-                          color: AppColors.textPrimaryOnLight,
+                          color: context.colors.textPrimary,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.5,
                         ),
@@ -670,7 +663,7 @@ class _RefundCard extends StatelessWidget {
                   'Refund initiated',
                   style: AppTextStyles.brandHuge.copyWith(
                     fontSize: 18,
-                    color: AppColors.textPrimaryOnLight,
+                    color: context.colors.textPrimary,
                     height: 1.2,
                   ),
                 ),
@@ -678,7 +671,7 @@ class _RefundCard extends StatelessWidget {
                 RichText(
                   text: TextSpan(
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.textSecondaryOnLight,
+                      color: context.colors.textSecondary,
                       height: 1.5,
                     ),
                     children: [
@@ -686,7 +679,7 @@ class _RefundCard extends StatelessWidget {
                       TextSpan(
                         text: '₹${_formatAmount(amount)}',
                         style: AppTextStyles.bodyLarge.copyWith(
-                          color: AppColors.textPrimaryOnLight,
+                          color: context.colors.textPrimary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -697,7 +690,7 @@ class _RefundCard extends StatelessWidget {
                       TextSpan(
                         text: '5–7 business days.',
                         style: AppTextStyles.bodyLarge.copyWith(
-                          color: AppColors.textPrimaryOnLight,
+                          color: context.colors.textPrimary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -761,7 +754,7 @@ class _TimelineCard extends StatelessWidget {
           Text(
             header,
             style: AppTextStyles.brandFooter.copyWith(
-              color: AppColors.textTertiaryOnLight,
+              color: context.colors.textTertiary,
               letterSpacing: 2,
               fontWeight: FontWeight.w700,
             ),

@@ -14,6 +14,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/brand_logo.dart';
 import '../../../../core/widgets/india_flag.dart';
 import '../providers/auth_provider.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// "Welcome to NammaSign" — phone number entry + social sign-in.
 /// Matches the Figma exactly: location chip, dark logo card, serif title
@@ -35,14 +36,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.backgroundLight,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
   }
 
   @override
@@ -88,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isLoading = flow is OtpSending;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
@@ -115,7 +108,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   'Welcome to',
                   style: AppTextStyles.brandHuge.copyWith(
                     fontSize: 32,
-                    color: AppColors.textPrimaryOnLight,
+                    color: context.colors.textPrimary,
                     height: 1.1,
                   ),
                 ),
@@ -131,7 +124,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Text(
                   'Sign in to book signage across India.',
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondaryOnLight,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xxxl),
@@ -154,13 +147,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Icon(
                       Icons.mail_outline_rounded,
                       size: 14,
-                      color: AppColors.textTertiaryOnLight,
+                      color: context.colors.textTertiary,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       "We'll text a 6-digit code to verify it's you",
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textTertiaryOnLight,
+                        color: context.colors.textTertiary,
                       ),
                     ),
                   ],
@@ -184,7 +177,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   label: 'Continue with Google',
                   leading: _GoogleGlyph(),
                   background: Colors.white,
-                  foreground: AppColors.textPrimaryOnLight,
+                  foreground: context.colors.textPrimary,
                   onTap: _onGoogleSignIn,
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -211,7 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     "We'll set up your account after sign-in.",
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textTertiaryOnLight,
+                      color: context.colors.textTertiary,
                     ),
                   ),
                 ),
@@ -247,14 +240,14 @@ class _LocationChip extends StatelessWidget {
         Text(
           city,
           style: AppTextStyles.brandFooter.copyWith(
-            color: AppColors.textPrimaryOnLight,
+            color: context.colors.textPrimary,
             letterSpacing: 2,
           ),
         ),
         Text(
           '  ·  DETECTED',
           style: AppTextStyles.brandFooter.copyWith(
-            color: AppColors.textPrimaryOnLight,
+            color: context.colors.textPrimary,
             letterSpacing: 2,
           ),
         ),
@@ -332,7 +325,7 @@ class _SectionLabel extends StatelessWidget {
         Text(
           label,
           style: AppTextStyles.brandFooter.copyWith(
-            color: AppColors.textTertiaryOnLight,
+            color: context.colors.textTertiary,
             letterSpacing: 2,
           ),
         ),
@@ -370,7 +363,7 @@ class _PhoneInputField extends StatelessWidget {
           Text(
             dialCode,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textPrimaryOnLight,
+              color: context.colors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -403,19 +396,19 @@ class _PhoneInputField extends StatelessWidget {
                 validator: Validators.phone,
                 onFieldSubmitted: onSubmitted,
                 cursorColor: AppColors.primary,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimaryOnLight,
+                  color: context.colors.textPrimary,
                   letterSpacing: 0.5,
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   filled: false,
                   fillColor: Colors.transparent,
                   hintText: '98765 43210',
                   hintStyle: TextStyle(
                     fontSize: 16,
-                    color: AppColors.textTertiaryOnLight,
+                    color: context.colors.textTertiary,
                   ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
@@ -537,7 +530,7 @@ class _OrDivider extends StatelessWidget {
           child: Text(
             'OR CONTINUE WITH',
             style: AppTextStyles.brandFooter.copyWith(
-              color: AppColors.textTertiaryOnLight,
+              color: context.colors.textTertiary,
               letterSpacing: 2,
             ),
           ),

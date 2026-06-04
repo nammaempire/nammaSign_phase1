@@ -6,6 +6,7 @@ import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
 import '../../../home/domain/billboard_listing.dart';
 import '../../domain/booking_totals.dart';
+import '../../../../app/theme/app_palette.dart';
 
 /// White summary card for the review/pay screen. Shows the selected board
 /// header, a list of charge line items, and the final purple total.
@@ -57,7 +58,7 @@ class OrderSummaryCard extends StatelessWidget {
                       '${listing.location} · ${listing.boardType}',
                       style: AppTextStyles.brandHuge.copyWith(
                         fontSize: 16,
-                        color: AppColors.textPrimaryOnLight,
+                        color: context.colors.textPrimary,
                         height: 1.15,
                       ),
                     ),
@@ -65,7 +66,7 @@ class OrderSummaryCard extends StatelessWidget {
                     Text(
                       _shortLocation(listing.fullAddress).toUpperCase(),
                       style: AppTextStyles.brandFooter.copyWith(
-                        color: AppColors.textTertiaryOnLight,
+                        color: context.colors.textTertiary,
                         letterSpacing: 2,
                         fontWeight: FontWeight.w700,
                       ),
@@ -121,7 +122,7 @@ class OrderSummaryCard extends StatelessWidget {
                 'Total',
                 style: AppTextStyles.brandHuge.copyWith(
                   fontSize: 22,
-                  color: AppColors.textPrimaryOnLight,
+                  color: context.colors.textPrimary,
                 ),
               ),
               Text(
@@ -177,8 +178,8 @@ class _Line extends StatelessWidget {
             label,
             style: AppTextStyles.bodyMedium.copyWith(
               color: muted
-                  ? AppColors.textTertiaryOnLight
-                  : AppColors.textSecondaryOnLight,
+                  ? context.colors.textTertiary
+                  : context.colors.textSecondary,
               fontSize: 15,
               height: 1.4,
             ),
@@ -193,8 +194,8 @@ class _Line extends StatelessWidget {
               style: AppTextStyles.bodyMedium.copyWith(
                 color: valueColor ??
                     (muted
-                        ? AppColors.textTertiaryOnLight
-                        : AppColors.textPrimaryOnLight),
+                        ? context.colors.textTertiary
+                        : context.colors.textPrimary),
                 fontWeight: valueStrong ? FontWeight.w700 : FontWeight.w500,
                 fontSize: 15,
                 height: 1.4,

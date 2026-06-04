@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/uploads/upload_limits.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/widgets/file_upload_slot.dart';
 import '../../../../core/widgets/picked_file.dart';
@@ -48,18 +49,34 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
   }
 
   Future<void> _pickPanCin() async {
-    final file = await _pickFile(allowed: ['pdf', 'jpg', 'jpeg', 'png']);
+    final file = await _pickKycFile();
     if (file != null) setState(() => _panCinFile = file);
   }
 
   Future<void> _pickAdditional() async {
-    final file = await _pickFile(allowed: ['pdf', 'jpg', 'jpeg', 'png']);
+    final file = await _pickKycFile();
     if (file != null) setState(() => _additionalFile = file);
   }
 
-  Future<PickedFile?> _pickFile({required List<String> allowed}) async {
+  /// Picks a KYC document, then validates extension + size. Returns null
+  /// when the user cancelled OR when the picked file violated the rules
+  /// (in which case an error snack is already shown).
+  Future<PickedFile?> _pickKycFile() async {
     try {
-      return await PickedFile.pick(extensions: allowed, label: 'documents');
+      final file = await PickedFile.pick(
+        extensions: UploadLimits.kycExtensions,
+        label: 'KYC documents',
+      );
+      if (file == null) return null;
+      final error = file.validate(
+        allowedExtensions: UploadLimits.kycExtensions,
+        maxBytes: UploadLimits.kycMaxBytes,
+      );
+      if (error != null) {
+        if (mounted) context.showErrorSnack(error);
+        return null;
+      }
+      return file;
     } catch (e, st) {
       appLogger.e('File pick failed', error: e, stackTrace: st);
       if (mounted) context.showErrorSnack('Could not open file picker');
@@ -191,7 +208,7 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
                   file: _panCinFile,
                   onPickFile: _pickPanCin,
                   emptyTitle: 'Upload PAN / CIN document',
-                  emptySubtitle: 'PDF or JPG  ·  max 5MB',
+                  emptySubtitle: UploadLimits.kycHint,
                   filledStatus: UploadStatus.uploaded,
                   filledIcon: Icons.insert_drive_file_outlined,
                   onRemove: () => setState(() => _panCinFile = null),
@@ -201,7 +218,7 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
                   file: _additionalFile,
                   onPickFile: _pickAdditional,
                   emptyTitle: 'Add more documents',
-                  emptySubtitle: 'CIN, GST, Address Proof  ·  PDF or JPG',
+                  emptySubtitle: 'CIN, GST, Address Proof  ·  ${UploadLimits.kycHint}',
                   filledStatus: UploadStatus.uploaded,
                   filledIcon: Icons.insert_drive_file_outlined,
                   onRemove: () => setState(() => _additionalFile = null),

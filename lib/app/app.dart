@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/app_constants.dart';
+import '../features/notifications/data/fcm_bootstrap.dart';
+import '../shared/providers/theme_mode_provider.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 
@@ -12,13 +14,18 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final mode = ref.watch(themeModeProvider);
+
+    // Spawn FCM wiring once. The bootstrap reads the auth state internally
+    // so it correctly defers token registration until sign-in completes.
+    ref.watch(fcmBootstrapProvider);
 
     return MaterialApp.router(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: mode,
       routerConfig: router,
     );
   }
