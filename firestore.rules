@@ -101,6 +101,17 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ---- LEGAL PAGES (Privacy, Terms, Content Guidelines) ----
+    // Authored from the admin portal, read by ANY user (including
+    // signed-out users on the login screen footer). Only published items
+    // are visible to non-admins.
+    match /legalPages/{pageId} {
+      allow get: if isAdmin() ||
+        (resource.data.published == true);
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+    }
+
     // ---- HELP FAQs ----
     // Authored from the admin portal, read by signed-in users on the Help
     // screen. Only published items are visible to non-admins so admins can

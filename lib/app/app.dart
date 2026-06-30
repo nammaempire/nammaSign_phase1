@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/analytics/analytics_identity_bootstrap.dart';
 import '../core/constants/app_constants.dart';
 import '../features/notifications/data/fcm_bootstrap.dart';
 import '../shared/providers/theme_mode_provider.dart';
@@ -19,6 +20,10 @@ class App extends ConsumerWidget {
     // Spawn FCM wiring once. The bootstrap reads the auth state internally
     // so it correctly defers token registration until sign-in completes.
     ref.watch(fcmBootstrapProvider);
+
+    // Wire signed-in identity into Crashlytics + Analytics. Same pattern
+    // as FCM — internal listener picks up auth changes.
+    ref.watch(analyticsIdentityBootstrapProvider);
 
     return MaterialApp.router(
       title: AppConstants.appName,

@@ -212,6 +212,12 @@ class _SideRail extends StatelessWidget {
             selected: section == AdminSection.faqs,
             onTap: (ctx) => ctx.go(AdminRoutes.faqs),
           ),
+          _NavItem(
+            icon: Icons.gavel_rounded,
+            label: 'Legal pages',
+            selected: section == AdminSection.legal,
+            onTap: (ctx) => ctx.go(AdminRoutes.legal),
+          ),
 
           const Spacer(),
 

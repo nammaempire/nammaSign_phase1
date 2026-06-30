@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "1075476022217-eectfa63kofu0jfvdf25le2t8fehe13u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nammasign_phase1",
+            "certificate_hash": "bbaa98aaeb26d72ebafab6391aeb22690b913526"
+          }
+        },
+        {
           "client_id": "1075476022217-5q14jnrjnhul2gbc9g7102nnnknst85h.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../core/analytics/analytics_service.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/uploads/upload_limits.dart';
 import '../../../../core/utils/logger.dart';
@@ -124,6 +125,20 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
         if (mounted) {
           context.showSnack('Profile saved. Document upload will retry later.');
         }
+      }
+      // Analytics — top of the corporate funnel.
+      await ref
+          .read(analyticsServiceProvider)
+          .signUpCompleted(accountType: 'corporate');
+      if (_panCinFile != null) {
+        await ref
+            .read(analyticsServiceProvider)
+            .kycUploaded(docKind: 'pan_cin');
+      }
+      if (_additionalFile != null) {
+        await ref
+            .read(analyticsServiceProvider)
+            .kycUploaded(docKind: 'corporate_additional');
       }
       if (!mounted) return;
       // Router redirect sees isSetupComplete=true and bounces to /home.

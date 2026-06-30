@@ -52,9 +52,11 @@ class _LocalTabState extends ConsumerState<LocalTab> {
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xxl,
+        // Slightly wider side gutters than the design system default so
+        // the area cards have breathing room against the screen edges.
+        AppSpacing.xxl + 8,
         AppSpacing.lg,
-        AppSpacing.xxl,
+        AppSpacing.xxl + 8,
         AppSpacing.xxxl,
       ),
       children: [

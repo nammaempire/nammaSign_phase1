@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/utils/logger.dart';
 import '../../../shared/providers/firebase_providers.dart';
 import '../../auth/presentation/providers/auth_provider.dart';
@@ -114,6 +115,13 @@ class FcmBootstrap {
     if (bookingId == null || bookingId.isEmpty) return;
     appLogger.d('FCM tap → bookingId=$bookingId');
     _ref.read(pendingNotificationBookingIdProvider.notifier).state = bookingId;
+
+    // Analytics — useful for measuring CTR on push and which push types
+    // drive the most engagement.
+    final type = message.data['type'] as String? ?? 'unknown';
+    _ref
+        .read(analyticsServiceProvider)
+        .notificationTapped(type: type);
   }
 }
 

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/analytics/analytics_service.dart';
 import '../../../../core/widgets/picked_file.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../../account_type/domain/account_type.dart';
@@ -133,6 +134,17 @@ class BookingNotifier extends Notifier<BookingDraft> {
 
     final id =
         await ref.read(bookingsRepositoryProvider).create(booking);
+
+    // Funnel — fires once the booking is actually persisted in Firestore.
+    // We log the booking total as the analytics "value" so revenue
+    // reporting in Firebase / Google Analytics works automatically.
+    await ref.read(analyticsServiceProvider).bookingSubmitted(
+          areaId: listing.id,
+          durationDays: draft.durationDays ?? 1,
+          amountRupees: totals.total,
+          accountType: draft.bookingType?.name ?? 'unknown',
+        );
+
     return id;
   }
 }

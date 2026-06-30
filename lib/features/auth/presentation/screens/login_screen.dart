@@ -13,6 +13,7 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/brand_logo.dart';
 import '../../../../core/widgets/india_flag.dart';
+import '../../../legal/presentation/widgets/consent_footer.dart';
 import '../providers/auth_provider.dart';
 import '../../../../app/theme/app_palette.dart';
 
@@ -194,6 +195,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       context.showSnack('Apple sign-in coming in Phase 1b'),
                 ),
                 const SizedBox(height: AppSpacing.xxl),
+
+                // Consent footer — required by Play Store / App Store /
+                // DPDPA. Tappable links open the user-facing legal pages
+                // even when the user isn't signed in yet (Firestore rule
+                // allows public read of published legal pages).
+                ConsentFooter(
+                  textColor: context.colors.textTertiary,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                const SizedBox(height: AppSpacing.md),
 
                 // First-time helper. Setup now happens automatically right
                 // after sign-in — new users get routed into the account

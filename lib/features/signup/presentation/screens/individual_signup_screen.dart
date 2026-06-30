@@ -7,6 +7,7 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/analytics/analytics_service.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/uploads/upload_limits.dart';
 import '../../../../core/utils/logger.dart';
@@ -128,6 +129,20 @@ class _IndividualSignupScreenState
         if (mounted) {
           context.showSnack('Profile saved. Document upload will retry later.');
         }
+      }
+      // Analytics — top of the individual funnel.
+      await ref
+          .read(analyticsServiceProvider)
+          .signUpCompleted(accountType: 'individual');
+      if (_aadhaarFront != null) {
+        await ref
+            .read(analyticsServiceProvider)
+            .kycUploaded(docKind: 'aadhaar_front');
+      }
+      if (_aadhaarBack != null) {
+        await ref
+            .read(analyticsServiceProvider)
+            .kycUploaded(docKind: 'aadhaar_back');
       }
       if (!mounted) return;
       context.go(AppRoutes.home);

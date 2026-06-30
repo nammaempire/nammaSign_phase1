@@ -1,16 +1,23 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/analytics/analytics_service.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
+import '../../../booking/data/invoice_builder.dart';
 import '../../../history/domain/booking.dart';
 import '../../../history/presentation/providers/bookings_provider.dart';
+import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../widgets/campaign_status_hero.dart';
 import '../widgets/timeline_step.dart';
 import '../../../../app/theme/app_palette.dart';
@@ -223,6 +230,7 @@ class _UnderReviewBody extends StatelessWidget {
               ),
             ],
           ),
+          _BookingActionsRow(booking: booking),
         ],
       ),
     );
@@ -330,6 +338,7 @@ class _LiveOnBoardBody extends StatelessWidget {
               ),
             ],
           ),
+          _BookingActionsRow(booking: booking),
         ],
       ),
     );
@@ -572,6 +581,8 @@ class _NeedsChangesBody extends StatelessWidget {
 
           // Refund card — lavender background, white icon box, message.
           _RefundCard(amount: booking.amount),
+
+          _BookingActionsRow(booking: booking),
         ],
       ),
     );
@@ -767,3 +778,175 @@ class _TimelineCard extends StatelessWidget {
   }
 }
 
+
+// ---------------------------------------------------------------------------
+// SHARED — Download invoice + Share buttons
+// ---------------------------------------------------------------------------
+//
+// Rendered at the bottom of every status body (Under review, Live, Not
+// approved) so the user can always grab a fresh tax invoice or forward
+// the booking summary regardless of where the campaign sits in its
+// lifecycle.
+
+class _BookingActionsRow extends ConsumerWidget {
+  const _BookingActionsRow({required this.booking});
+  final Booking booking;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg),
+      child: Row(
+        children: [
+          Expanded(
+            child: _ActionButton(
+              icon: Icons.download_rounded,
+              label: 'Download invoice',
+              onTap: () => _downloadInvoice(context, ref),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: _ActionButton(
+              icon: Icons.share_outlined,
+              label: 'Share',
+              onTap: () => _shareBooking(context, ref),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Builds a PDF invoice for this booking and hands it to the OS share
+  // sheet. Math reverses GST out of the persisted total so subtotal +
+  // GST always sum to what the user paid.
+  Future<void> _downloadInvoice(BuildContext context, WidgetRef ref) async {
+    final profile = ref.read(userProfileProvider).asData?.value;
+    final orderRef = 'NE-2026-A${(booking.amount * 7 % 9000 + 1000)}';
+
+    final total = booking.amount;
+    final taxable = (total / 1.18).round();
+    final gst = total - taxable;
+    final dailyRate = booking.durationDays > 0
+        ? (taxable / booking.durationDays).round()
+        : taxable;
+
+    final data = InvoiceData(
+      orderRef: orderRef,
+      campaignTitle: booking.campaignTitle.isEmpty
+          ? 'Untitled campaign'
+          : booking.campaignTitle,
+      boardLabel: booking.boardType,
+      location: booking.location,
+      durationDays: booking.durationDays,
+      dailyRate: dailyRate,
+      subtotal: taxable,
+      gst: gst,
+      total: total,
+      status: booking.status.label,
+      customerName: profile?.bestDisplayName,
+      customerEmail: profile?.email ?? profile?.corporate?.officialEmail,
+      customerPhone: profile?.phone ?? profile?.individual?.mobile,
+      runDateLabel: booking.runDateLabel,
+      paymentMethod: booking.paymentMethod,
+    );
+
+    try {
+      final bytes = await InvoiceBuilder.build(data);
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/NammaSign_invoice_$orderRef.pdf');
+      await file.writeAsBytes(bytes, flush: true);
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/pdf')],
+        subject: 'NammaSign invoice — $orderRef',
+        text: 'Tax invoice for your NammaSign booking $orderRef.',
+      );
+      await ref.read(analyticsServiceProvider).invoiceDownloaded();
+    } catch (e) {
+      if (!context.mounted) return;
+      context.showSnack("Couldn't generate invoice. Please try again.");
+    }
+  }
+
+  // Lighter-weight share — plain-text booking summary. Forwards cleanly
+  // via WhatsApp / SMS without any PDF attachment.
+  Future<void> _shareBooking(BuildContext context, WidgetRef ref) async {
+    final orderRef = 'NE-2026-A${(booking.amount * 7 % 9000 + 1000)}';
+    final lines = <String>[
+      'NammaSign booking ${booking.status.label}',
+      '',
+      'Order ref: $orderRef',
+      if (booking.campaignTitle.isNotEmpty)
+        'Campaign: ${booking.campaignTitle}',
+      'Board: ${booking.location} · ${booking.boardType}',
+      'Duration: ${booking.durationDays} day'
+          '${booking.durationDays == 1 ? '' : 's'}',
+      'Total: Rs ${booking.amount} (incl. 18% GST)',
+      '',
+      'Track it in the NammaSign app — History tab.',
+    ];
+    try {
+      await Share.share(
+        lines.join('\n'),
+        subject: 'NammaSign booking — $orderRef',
+      );
+      await ref.read(analyticsServiceProvider).appBookingShared();
+    } catch (e) {
+      if (!context.mounted) return;
+      context.showSnack("Couldn't open share sheet.");
+    }
+  }
+}
+
+/// A single white-card button matching the design system used elsewhere
+/// in the campaign status screen.
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: context.colors.card,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.18),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: context.colors.textPrimary, size: 18),
+              const SizedBox(width: AppSpacing.sm),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: context.colors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -11,6 +11,7 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/analytics/analytics_service.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../../data/invoice_builder.dart';
@@ -105,6 +106,7 @@ class _PaymentSuccessScreenState
         subject: 'NammaSign invoice — $orderRef',
         text: 'Tax invoice for your NammaSign booking $orderRef.',
       );
+      await ref.read(analyticsServiceProvider).invoiceDownloaded();
     } catch (e) {
       if (!mounted) return;
       context.showSnack("Couldn't generate invoice. Please try again.");
@@ -138,6 +140,7 @@ class _PaymentSuccessScreenState
         lines.join('\n'),
         subject: 'NammaSign booking — $orderRef',
       );
+      await ref.read(analyticsServiceProvider).appBookingShared();
     } catch (e) {
       if (!mounted) return;
       context.showSnack("Couldn't open share sheet.");

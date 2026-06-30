@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
-import '../../domain/billboard_listing.dart';
+import '../providers/listings_provider.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/local_tab.dart';
 import '../widgets/premium_tab.dart';
@@ -44,6 +44,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Live count of areas from Firestore — same source the list of cards
+    // below the pills reads from, so the badge can never lie. Falls back
+    // to 0 while loading or on error.
+    final localCount = ref
+            .watch(listingsStreamProvider)
+            .maybeWhen(data: (l) => l.length, orElse: () => 0);
     return Scaffold(
       backgroundColor: context.colors.bg,
       body: SafeArea(
@@ -54,7 +60,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             _TabHeader(
               controller: _tabs,
               index: _index,
-              localCount: sampleListings.length,
+              localCount: localCount,
             ),
             Expanded(
               child: TabBarView(

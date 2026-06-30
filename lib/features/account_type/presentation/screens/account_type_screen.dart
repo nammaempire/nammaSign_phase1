@@ -10,6 +10,7 @@ import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../legal/presentation/widgets/consent_footer.dart';
 import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../../domain/account_type.dart';
 import '../providers/account_type_provider.dart';
@@ -241,6 +242,17 @@ class _AccountTypeScreenState extends ConsumerState<AccountTypeScreen> {
                     ],
                   ),
                 ),
+              ),
+            ),
+            // Consent footer — same line shown on login. Sits under the
+            // primary CTA per Apple's HIG recommendation.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xxl, 0, AppSpacing.xxl, AppSpacing.lg,
+              ),
+              child: ConsentFooter(
+                textColor: context.colors.textTertiary,
+                padding: EdgeInsets.zero,
               ),
             ),
           ],

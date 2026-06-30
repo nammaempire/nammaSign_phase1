@@ -26,6 +26,7 @@ import '../../features/signup/presentation/screens/individual_signup_screen.dart
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/main_shell.dart';
 import '../../features/help/presentation/screens/help_screen.dart';
+import '../../features/legal/presentation/screens/legal_page_screen.dart';
 import '../../features/notifications/data/fcm_bootstrap.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -185,6 +186,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.help,
         builder: (_, __) => const HelpScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.legal,
+        builder: (_, state) => LegalPageScreen(
+          pageId: state.pathParameters['pageId']!,
+        ),
       ),
 
       StatefulShellRoute.indexedStack(

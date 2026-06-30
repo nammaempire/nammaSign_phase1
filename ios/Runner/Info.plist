@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>nammasign_phase1</string>
+	<string>NammaSign</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -87,5 +87,27 @@
 			</array>
 		</dict>
 	</array>
+
+	<!--
+		PRIVACY USAGE DESCRIPTIONS (App Store Review requirement)
+		Apple rejects any submission that uses photo / camera / mic
+		frameworks without an honest, specific reason string. Each line
+		below is the exact text iOS shows when the system permission
+		prompt appears. Keep them short, specific, and user-benefit
+		focused — don't write "we need this to use the app".
+	-->
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>NammaSign needs photo library access so you can upload your KYC documents (PAN, Aadhaar, CIN) and your ad creatives (images and videos) for the boards.</string>
+
+	<key>NSCameraUsageDescription</key>
+	<string>NammaSign uses the camera so you can take a fresh photo of your KYC document instead of digging through your photo library.</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>NammaSign saves your downloaded tax invoice to your photo library so you can keep a copy for your records.</string>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>NammaSign does not record audio. This permission is requested only because the video playback framework declares a microphone capability.</string>
+
 </dict>
 </plist>

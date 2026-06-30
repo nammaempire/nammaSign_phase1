@@ -14,7 +14,9 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../history/domain/booking.dart';
 import '../../../history/presentation/providers/bookings_provider.dart';
 import '../../../../app/theme/app_palette.dart';
+import '../../../../core/analytics/analytics_service.dart';
 import '../../../../shared/providers/theme_mode_provider.dart';
+import '../../../legal/domain/legal_page.dart';
 import '../../../notifications/data/notifications_repository.dart';
 import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../../../user/domain/user_profile.dart';
@@ -170,6 +172,49 @@ class ProfileScreen extends ConsumerWidget {
                       title: 'Help & FAQs',
                       onTap: () => context.push(AppRoutes.help),
                     ),
+                  ],
+                ),
+
+                const SizedBox(height: AppSpacing.xxl),
+
+                // LEGAL — required by DPDPA + Play / App Store policies.
+                SettingsSection(
+                  title: 'Legal',
+                  children: [
+                    SettingsTile(
+                      icon: Icons.lock_outline_rounded,
+                      title: 'Privacy policy',
+                      subtitle: 'How we collect and use your data',
+                      onTap: () => context.push(
+                        AppRoutes.legalFor(LegalPageId.privacy),
+                      ),
+                    ),
+                    SettingsTile(
+                      icon: Icons.description_outlined,
+                      title: 'Terms of service',
+                      subtitle: 'The agreement you accept by using NammaSign',
+                      onTap: () => context.push(
+                        AppRoutes.legalFor(LegalPageId.terms),
+                      ),
+                    ),
+                    SettingsTile(
+                      icon: Icons.policy_outlined,
+                      title: 'Content guidelines',
+                      subtitle: 'What creatives are allowed on the boards',
+                      onTap: () => context.push(
+                        AppRoutes.legalFor(LegalPageId.content),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: AppSpacing.xxl),
+
+                // ACCOUNT ACTIONS — destructive last so the eye doesn't
+                // land on them by accident.
+                SettingsSection(
+                  title: 'Account actions',
+                  children: [
                     SettingsTile(
                       icon: Icons.delete_forever_outlined,
                       title: 'Delete account',
@@ -585,6 +630,9 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
 
   try {
     await ref.read(accountDeletionRepositoryProvider).deleteMyAccount();
+    // Fire-and-forget the analytics event before the auth state flips —
+    // setUserId is about to be cleared by the bootstrap listener.
+    await ref.read(analyticsServiceProvider).accountDeleted();
     // Once the server-side delete completes, the Firebase Auth user no
     // longer exists — sign out locally so the auth-state stream emits null
     // and the router carries us to /login.

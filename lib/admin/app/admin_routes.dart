@@ -13,10 +13,11 @@ class AdminRoutes {
   static const String areas = '/areas';
   static const String finance = '/finance';
   static const String faqs = '/faqs';
+  static const String legal = '/legal';
 
   static String bookingDetailFor(String id) => '/bookings/$id';
   static String userDetailFor(String id) => '/users/$id';
 }
 
 /// Top-level section the shell highlights in the sidebar.
-enum AdminSection { dashboard, bookings, users, areas, finance, faqs }
+enum AdminSection { dashboard, bookings, users, areas, finance, faqs, legal }

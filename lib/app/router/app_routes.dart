@@ -43,4 +43,9 @@ class AppRoutes {
 
   // Help & FAQs
   static const String help = '/help';
+
+  // Legal pages — Privacy, Terms, Content Guidelines.
+  // `pageId` is one of LegalPageId.* constants.
+  static const String legal = '/legal/:pageId';
+  static String legalFor(String pageId) => '/legal/$pageId';
 }

@@ -33,10 +33,11 @@ class HomeAppBar extends ConsumerWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              BrandLogo(
+              // No `color:` here — that prop tints the image as a flat
+              // colour and would wipe out the gradient on the new mark.
+              const BrandLogo(
                 variant: LogoVariant.mark,
-                height: 26,
-                color: context.colors.textPrimary,
+                height: 30,
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
