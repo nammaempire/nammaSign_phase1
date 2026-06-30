@@ -17,9 +17,8 @@ import '../models/user_model.dart';
 class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuthRepository({
     required fb.FirebaseAuth firebaseAuth,
-    required FirebaseFirestore firestore,
-  })  : _auth = firebaseAuth,
-        _firestore = firestore;
+    required this._firestore,
+  })  : _auth = firebaseAuth;
 
   final fb.FirebaseAuth _auth;
   final FirebaseFirestore _firestore;

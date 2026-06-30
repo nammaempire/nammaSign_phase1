@@ -223,8 +223,8 @@ class _NotYetPublished extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              "If you need a copy in the meantime, email us at "
-              "nammaempire@gmail.com.",
+              'If you need a copy in the meantime, email us at '
+              'nammaempire@gmail.com.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: context.colors.textSecondary,

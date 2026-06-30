@@ -97,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _LocationChip(city: _detectedCity),
+                const _LocationChip(city: _detectedCity),
                 const SizedBox(height: AppSpacing.xxl),
 
                 // Logo card
@@ -429,8 +429,8 @@ class _PhoneInputField extends StatelessWidget {
                   focusedErrorBorder: InputBorder.none,
                   disabledBorder: InputBorder.none,
                   isDense: true,
-                  contentPadding: EdgeInsets.only(right: AppSpacing.lg),
-                  errorStyle: TextStyle(height: 0, fontSize: 0),
+                  contentPadding: const EdgeInsets.only(right: AppSpacing.lg),
+                  errorStyle: const TextStyle(height: 0, fontSize: 0),
                 ),
               ),
             ),

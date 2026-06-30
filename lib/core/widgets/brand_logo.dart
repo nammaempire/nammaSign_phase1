@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../constants/app_constants.dart';
 import '../../app/theme/app_palette.dart';
@@ -42,7 +41,7 @@ class BrandLogo extends StatelessWidget {
       color: color,
       // The asset file may not exist yet during dev — render a placeholder
       // instead of crashing the build.
-      errorBuilder: (_, __, ___) => _Fallback(
+      errorBuilder: (_, _, _) => _Fallback(
         variant: variant,
         height: h,
         color: color ?? context.colors.textPrimary,

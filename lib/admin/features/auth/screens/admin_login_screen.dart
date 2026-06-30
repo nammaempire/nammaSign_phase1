@@ -15,15 +15,12 @@ class AdminLoginScreen extends ConsumerStatefulWidget {
   ConsumerState<AdminLoginScreen> createState() => _AdminLoginScreenState();
 }
 
-// TODO(prod): Clear these defaults and require the admin to type their
-// credentials before sharing the admin URL with anyone. They exist only so
-// dev sign-in is one click; anyone with the URL can see them otherwise.
-const _kDevDefaultEmail = 'admin@nammaempire.com';
-const _kDevDefaultPassword = 'NammaSign@2026';
-
 class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
-  final _email = TextEditingController(text: _kDevDefaultEmail);
-  final _password = TextEditingController(text: _kDevDefaultPassword);
+  // Fields start empty — the admin must type their own credentials. Never
+  // pre-fill real credentials here: anyone who can open the admin URL would
+  // otherwise see a working login.
+  final _email = TextEditingController();
+  final _password = TextEditingController();
   bool _busy = false;
   String? _error;
 

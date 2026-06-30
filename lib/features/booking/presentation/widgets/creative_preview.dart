@@ -147,7 +147,7 @@ class _CreativePreviewState extends State<CreativePreview> {
     return Image.file(
       File(file.path),
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const _LoadingStage(),
+      errorBuilder: (_, _, _) => const _LoadingStage(),
     );
   }
 }

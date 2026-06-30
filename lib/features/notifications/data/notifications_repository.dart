@@ -9,10 +9,9 @@ import '../domain/app_notification.dart';
 /// the user's FCM token list on the `users/{uid}` doc.
 class NotificationsRepository {
   NotificationsRepository({
-    required FirebaseFirestore firestore,
-    required FirebaseMessaging messaging,
-  })  : _firestore = firestore,
-        _messaging = messaging;
+    required this._firestore,
+    required this._messaging,
+  });
 
   final FirebaseFirestore _firestore;
   final FirebaseMessaging _messaging;

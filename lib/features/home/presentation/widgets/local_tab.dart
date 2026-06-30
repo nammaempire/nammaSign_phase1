@@ -82,7 +82,7 @@ class _LocalTabState extends ConsumerState<LocalTab> {
             child: Center(
               child: Column(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.error_outline_rounded,
                     color: AppColors.error,
                     size: 32,
@@ -224,7 +224,7 @@ class _SearchBar extends StatelessWidget {
               onTap: onClear,
               behavior: HitTestBehavior.opaque,
               child: Padding(
-                padding: EdgeInsets.only(left: AppSpacing.sm),
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
                 child: Icon(
                   Icons.close_rounded,
                   color: context.colors.textTertiary,

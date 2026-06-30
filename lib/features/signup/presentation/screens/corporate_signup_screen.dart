@@ -117,8 +117,8 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
       // the user on the signup screen. They can re-upload later.
       try {
         await repo.uploadKycDocs(user.id, {
-          if (_panCinFile != null) 'panCin': _panCinFile!,
-          if (_additionalFile != null) 'additional': _additionalFile!,
+          'panCin': ?_panCinFile,
+          'additional': ?_additionalFile,
         });
       } catch (e, st) {
         appLogger.w('KYC upload failed', error: e, stackTrace: st);

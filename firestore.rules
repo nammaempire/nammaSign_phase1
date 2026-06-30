@@ -90,8 +90,12 @@ service cloud.firestore {
     }
 
     // ---- WAITLIST (premium notify-me) ----
+    // Sign-ups must come from an authenticated user. The app is fully
+    // auth-gated, so `if true` (any anonymous client on the internet) was an
+    // open spam/abuse door — requiring sign-in makes every write accountable
+    // to a uid. Reads stay admin-only. No client updates or deletes.
     match /waitlist/{id} {
-      allow create: if true;
+      allow create: if isSignedIn();
       allow read: if isAdmin();
     }
 

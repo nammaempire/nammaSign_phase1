@@ -47,19 +47,19 @@ final adminRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: AdminRoutes.login,
-        builder: (_, __) => const AdminLoginScreen(),
+        builder: (_, _) => const AdminLoginScreen(),
       ),
       GoRoute(
         path: AdminRoutes.notAuthorized,
-        builder: (_, __) => const NotAuthorizedScreen(),
+        builder: (_, _) => const NotAuthorizedScreen(),
       ),
       GoRoute(
         path: AdminRoutes.dashboard,
-        builder: (_, __) => const DashboardScreen(),
+        builder: (_, _) => const DashboardScreen(),
       ),
       GoRoute(
         path: AdminRoutes.bookings,
-        builder: (_, __) => const BookingsQueueScreen(),
+        builder: (_, _) => const BookingsQueueScreen(),
       ),
       GoRoute(
         path: AdminRoutes.bookingDetail,
@@ -69,7 +69,7 @@ final adminRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AdminRoutes.users,
-        builder: (_, __) => const UsersListScreen(),
+        builder: (_, _) => const UsersListScreen(),
       ),
       GoRoute(
         path: AdminRoutes.userDetail,
@@ -78,19 +78,19 @@ final adminRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AdminRoutes.areas,
-        builder: (_, __) => const AreasListScreen(),
+        builder: (_, _) => const AreasListScreen(),
       ),
       GoRoute(
         path: AdminRoutes.finance,
-        builder: (_, __) => const FinanceScreen(),
+        builder: (_, _) => const FinanceScreen(),
       ),
       GoRoute(
         path: AdminRoutes.faqs,
-        builder: (_, __) => const AdminFaqsScreen(),
+        builder: (_, _) => const AdminFaqsScreen(),
       ),
       GoRoute(
         path: AdminRoutes.legal,
-        builder: (_, __) => const AdminLegalScreen(),
+        builder: (_, _) => const AdminLegalScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

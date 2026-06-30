@@ -147,7 +147,7 @@ class AnalyticsService {
   Future<void> custom(String name, [Map<String, Object>? params]) {
     if (kDebugMode && !RegExp(r'^[a-z][a-z0-9_]{0,39}$').hasMatch(name)) {
       assert(false, "Analytics event name '$name' isn't snake_case "
-          "or is too long (40 char max).");
+          'or is too long (40 char max).');
     }
     return _a.logEvent(name: name, parameters: params);
   }

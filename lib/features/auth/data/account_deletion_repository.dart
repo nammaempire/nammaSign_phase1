@@ -7,8 +7,7 @@ import '../../../shared/providers/firebase_providers.dart';
 /// here so the call site (a destructive button in Profile) stays compact
 /// and any error transforming happens in one place.
 class AccountDeletionRepository {
-  AccountDeletionRepository({required FirebaseFunctions functions})
-      : _functions = functions;
+  AccountDeletionRepository({required this._functions});
 
   final FirebaseFunctions _functions;
 

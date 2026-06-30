@@ -38,8 +38,7 @@ abstract class BookingsRepository {
 }
 
 class FirestoreBookingsRepository implements BookingsRepository {
-  FirestoreBookingsRepository({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+  FirestoreBookingsRepository({required this._firestore});
 
   final FirebaseFirestore _firestore;
 

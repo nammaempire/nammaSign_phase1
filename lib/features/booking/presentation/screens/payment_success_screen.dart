@@ -17,7 +17,6 @@ import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../../data/invoice_builder.dart';
 import '../../domain/booking_totals.dart';
 import '../providers/booking_provider.dart';
-import '../../../../app/theme/app_palette.dart';
 
 /// Light-green confirmation screen shown after a successful payment.
 class PaymentSuccessScreen extends ConsumerStatefulWidget {

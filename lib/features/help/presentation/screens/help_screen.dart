@@ -335,7 +335,7 @@ class _StillNeedHelpCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "Drop us a note — we usually reply within a business day.",
+            'Drop us a note — we usually reply within a business day.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: context.colors.textSecondary,
             ),

@@ -7,8 +7,7 @@ import '../../../../shared/providers/firebase_providers.dart';
 /// caller is in /admins/{uid} before doing anything destructive, so this
 /// can safely be exposed to any admin-portal screen.
 class AdminDeleteUserRepository {
-  AdminDeleteUserRepository({required FirebaseFunctions functions})
-      : _functions = functions;
+  AdminDeleteUserRepository({required this._functions});
 
   final FirebaseFunctions _functions;
 

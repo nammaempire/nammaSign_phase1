@@ -25,8 +25,8 @@ class InvoiceData {
     this.customerPhone,
     this.runDateLabel,
     this.paymentMethod,
-    DateTime? issuedAt,
-  }) : issuedAt = issuedAt;
+    this.issuedAt,
+  });
 
   final String orderRef;
   final String campaignTitle;
@@ -123,7 +123,7 @@ class InvoiceBuilder {
                 ),
                 pw.Text(
                   'Ad-Tech Marketplace · Bengaluru',
-                  style: pw.TextStyle(
+                  style: const pw.TextStyle(
                     color: PdfColors.white,
                     fontSize: 10,
                   ),
@@ -155,7 +155,7 @@ class InvoiceBuilder {
               pw.SizedBox(height: 2),
               pw.Text(
                 'Issued ${fmtDate.format(data.when)} IST',
-                style: pw.TextStyle(
+                style: const pw.TextStyle(
                   color: PdfColors.white,
                   fontSize: 9,
                 ),
@@ -219,7 +219,7 @@ class InvoiceBuilder {
     }
 
     return pw.Table(
-      border: pw.TableBorder(
+      border: const pw.TableBorder(
         horizontalInside: pw.BorderSide(color: _hairline, width: 0.5),
         bottom: pw.BorderSide(color: _hairline, width: 0.5),
         top: pw.BorderSide(color: _hairline, width: 0.5),
@@ -349,19 +349,19 @@ class InvoiceBuilder {
         pw.SizedBox(height: 12),
         pw.Text(
           paymentLine,
-          style: pw.TextStyle(color: _mutedInk, fontSize: 9),
+          style: const pw.TextStyle(color: _mutedInk, fontSize: 9),
         ),
         pw.SizedBox(height: 4),
         pw.Text(
           'GST is computed at 18% on the taxable subtotal as per Indian '
           'tax regulations. NammaSign collects GST on behalf of the '
           'government. Save this invoice for your records.',
-          style: pw.TextStyle(color: _mutedInk, fontSize: 8, lineSpacing: 2),
+          style: const pw.TextStyle(color: _mutedInk, fontSize: 8, lineSpacing: 2),
         ),
         pw.SizedBox(height: 6),
         pw.Text(
           'Questions? nammaempire@gmail.com',
-          style: pw.TextStyle(color: _mutedInk, fontSize: 9),
+          style: const pw.TextStyle(color: _mutedInk, fontSize: 9),
         ),
       ],
     );

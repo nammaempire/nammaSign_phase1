@@ -33,7 +33,7 @@ class BookingsQueueScreen extends ConsumerWidget {
               vertical: 20,
             ),
             itemCount: bookings.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (_, i) => _BookingRow(booking: bookings[i]),
           );
         },
@@ -260,10 +260,10 @@ class _EmptyQueue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Icon(Icons.check_circle_outline,
               size: 56, color: Colors.black26),
           SizedBox(height: 12),

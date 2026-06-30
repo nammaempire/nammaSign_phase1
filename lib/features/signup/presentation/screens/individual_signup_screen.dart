@@ -121,8 +121,8 @@ class _IndividualSignupScreenState
       // the user on the signup screen. They can re-upload later.
       try {
         await repo.uploadKycDocs(user.id, {
-          if (_aadhaarFront != null) 'aadhaarFront': _aadhaarFront!,
-          if (_aadhaarBack != null) 'aadhaarBack': _aadhaarBack!,
+          'aadhaarFront': ?_aadhaarFront,
+          'aadhaarBack': ?_aadhaarBack,
         });
       } catch (e, st) {
         appLogger.w('KYC upload failed', error: e, stackTrace: st);
@@ -393,8 +393,8 @@ class _PhoneInputWithFlagState extends State<_PhoneInputWithFlag> {
                   focusedErrorBorder: InputBorder.none,
                   disabledBorder: InputBorder.none,
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                  errorStyle: TextStyle(height: 0, fontSize: 0),
+                  contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                  errorStyle: const TextStyle(height: 0, fontSize: 0),
                 ),
               ),
             ),

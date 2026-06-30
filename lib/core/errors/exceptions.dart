@@ -1,5 +1,6 @@
 /// Internal exceptions thrown by data sources.
 /// Repositories catch these and convert to [Failure] objects.
+library;
 
 class ServerException implements Exception {
   const ServerException(this.message, {this.code});

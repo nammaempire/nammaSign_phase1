@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,7 +6,6 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
-import '../../../../core/extensions/context_extensions.dart';
 import '../../domain/booking.dart';
 import '../providers/bookings_provider.dart';
 import '../widgets/booking_card.dart';
@@ -191,7 +189,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                   AppSpacing.xxxl,
                                 ),
                                 itemCount: filtered.length,
-                                separatorBuilder: (_, __) =>
+                                separatorBuilder: (_, _) =>
                                     const SizedBox(height: AppSpacing.md),
                                 itemBuilder: (_, i) => BookingCard(
                                   booking: filtered[i],

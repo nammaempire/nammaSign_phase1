@@ -114,31 +114,31 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: AppRoutes.splash,
-        builder: (_, __) => const SplashScreen(),
+        builder: (_, _) => const SplashScreen(),
       ),
       GoRoute(
         path: AppRoutes.onboarding,
-        builder: (_, __) => const OnboardingScreen(),
+        builder: (_, _) => const OnboardingScreen(),
       ),
       GoRoute(
         path: AppRoutes.accountType,
-        builder: (_, __) => const AccountTypeScreen(),
+        builder: (_, _) => const AccountTypeScreen(),
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (_, __) => const LoginScreen(),
+        builder: (_, _) => const LoginScreen(),
       ),
       GoRoute(
         path: AppRoutes.otp,
-        builder: (_, __) => const OtpScreen(),
+        builder: (_, _) => const OtpScreen(),
       ),
       GoRoute(
         path: AppRoutes.signupCorporate,
-        builder: (_, __) => const CorporateSignupScreen(),
+        builder: (_, _) => const CorporateSignupScreen(),
       ),
       GoRoute(
         path: AppRoutes.signupIndividual,
-        builder: (_, __) => const IndividualSignupScreen(),
+        builder: (_, _) => const IndividualSignupScreen(),
       ),
 
       // Booking flow (only reachable when signed in)
@@ -150,23 +150,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.bookingCorporate,
-        builder: (_, __) => const CorporateCampaignScreen(),
+        builder: (_, _) => const CorporateCampaignScreen(),
       ),
       GoRoute(
         path: AppRoutes.bookingIndividual,
-        builder: (_, __) => const IndividualCampaignScreen(),
+        builder: (_, _) => const IndividualCampaignScreen(),
       ),
       GoRoute(
         path: AppRoutes.bookingReview,
-        builder: (_, __) => const ReviewPayScreen(),
+        builder: (_, _) => const ReviewPayScreen(),
       ),
       GoRoute(
         path: AppRoutes.bookingSuccess,
-        builder: (_, __) => const PaymentSuccessScreen(),
+        builder: (_, _) => const PaymentSuccessScreen(),
       ),
       GoRoute(
         path: AppRoutes.bookingFailure,
-        builder: (_, __) => const PaymentFailureScreen(),
+        builder: (_, _) => const PaymentFailureScreen(),
       ),
       GoRoute(
         path: AppRoutes.campaignStatus,
@@ -177,15 +177,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.personalInfo,
-        builder: (_, __) => const PersonalInfoScreen(),
+        builder: (_, _) => const PersonalInfoScreen(),
       ),
       GoRoute(
         path: AppRoutes.notifications,
-        builder: (_, __) => const NotificationsScreen(),
+        builder: (_, _) => const NotificationsScreen(),
       ),
       GoRoute(
         path: AppRoutes.help,
-        builder: (_, __) => const HelpScreen(),
+        builder: (_, _) => const HelpScreen(),
       ),
       GoRoute(
         path: AppRoutes.legal,
@@ -195,25 +195,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       StatefulShellRoute.indexedStack(
-        builder: (_, __, navigationShell) =>
+        builder: (_, _, navigationShell) =>
             MainShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(routes: [
             GoRoute(
               path: AppRoutes.home,
-              builder: (_, __) => const HomeScreen(),
+              builder: (_, _) => const HomeScreen(),
             ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: AppRoutes.history,
-              builder: (_, __) => const HistoryScreen(),
+              builder: (_, _) => const HistoryScreen(),
             ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: AppRoutes.profile,
-              builder: (_, __) => const ProfileScreen(),
+              builder: (_, _) => const ProfileScreen(),
             ),
           ]),
         ],
@@ -307,7 +307,7 @@ class _BookingListingResolver extends ConsumerWidget {
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => const _BookingListingUnavailable(),
+      error: (_, _) => const _BookingListingUnavailable(),
       data: (listing) => listing == null
           ? const _BookingListingUnavailable()
           : BookingAccountTypeScreen(listing: listing),

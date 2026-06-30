@@ -9,7 +9,6 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
-import '../../../../app/theme/app_palette.dart';
 
 /// Soft-pink failure screen shown when payment fails. The booking slot is
 /// held for 15 minutes so the user can retry.

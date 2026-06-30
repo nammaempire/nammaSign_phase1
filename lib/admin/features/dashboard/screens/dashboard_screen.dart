@@ -22,11 +22,11 @@ class DashboardScreen extends ConsumerWidget {
       section: AdminSection.dashboard,
       title: '$greeting, ${email.split('@').first}',
       subtitle: DateFormat('EEEE, d MMMM y').format(DateTime.now()),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AdminSpacing.xxl),
+      child: const SingleChildScrollView(
+        padding: EdgeInsets.all(AdminSpacing.xxl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: const [
+          children: [
             _StaleAlertCard(),
             _MetricGrid(),
             SizedBox(height: AdminSpacing.xxl),
@@ -511,7 +511,7 @@ class _PulsingIconState extends State<_PulsingIcon>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, __) {
+      builder: (_, _) {
         final scale = 1.0 + (_ctrl.value * 0.12);
         return Transform.scale(
           scale: scale,

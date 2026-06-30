@@ -26,7 +26,7 @@ class AppColors {
   static const Color card = Color(0xFF1F1F28);
 
   // ---- Surfaces (light - used on onboarding and any light screens) ----
-  static const Color backgroundLight = Color(0xFFFFAF6FE);
+  static const Color backgroundLight = Color(0xffffaf6fe);
   static const Color surfaceLight = Color(0xFFEDE4FA);
   static const Color cardLight = Color(0xFFFFFFFF);
   static const Color badgeDark = Color(0xFF1A1A22);

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../features/legal/data/legal_repository.dart';
 import '../../../../features/legal/domain/legal_page.dart';
 import '../../../../features/legal/presentation/providers/legal_provider.dart';
 import '../../../app/admin_routes.dart';

@@ -1,4 +1,4 @@
-package com.example.nammasign_phase1
+package com.nammaempire.nammasign
 
 import io.flutter.embedding.android.FlutterActivity
 

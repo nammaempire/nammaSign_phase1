@@ -54,7 +54,7 @@ class NotificationsScreen extends ConsumerWidget {
               onPressed: () => ref
                   .read(notificationsRepositoryProvider)
                   .markAllRead(user.id),
-              child: Text(
+              child: const Text(
                 'Mark all read',
                 style: TextStyle(color: AppColors.primary),
               ),
@@ -81,7 +81,7 @@ class NotificationsScreen extends ConsumerWidget {
               vertical: AppSpacing.md,
             ),
             itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            separatorBuilder: (_, _) => const SizedBox(height: 8),
             itemBuilder: (_, i) => _NotificationRow(
               notif: items[i],
               onTap: () => _handleTap(context, ref, items[i]),

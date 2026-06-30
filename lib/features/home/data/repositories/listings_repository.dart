@@ -22,8 +22,7 @@ abstract class ListingsRepository {
 }
 
 class FirestoreListingsRepository implements ListingsRepository {
-  FirestoreListingsRepository({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+  FirestoreListingsRepository({required this._firestore});
 
   final FirebaseFirestore _firestore;
 

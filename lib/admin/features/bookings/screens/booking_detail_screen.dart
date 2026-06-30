@@ -189,7 +189,7 @@ class _CreativePreview extends StatelessWidget {
           child: Image.network(
             url,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(
+            errorBuilder: (_, _, _) => Container(
               height: 160,
               alignment: Alignment.center,
               color: const Color(0xFFF1EFE8),
@@ -561,12 +561,12 @@ class _CustomerBody extends StatelessWidget {
     // Pick the best identity fields based on account type.
     final isCorp = corp != null;
     final headline =
-        (isCorp ? corp!.name : individual?.fullName) ?? '(no name)';
+        (isCorp ? corp.name : individual?.fullName) ?? '(no name)';
     final subline = isCorp ? 'Corporate' : 'Individual';
     final phone =
-        (isCorp ? corp!.managerPhone : individual?.mobile) ?? '';
-    final email = isCorp ? corp!.officialEmail : null;
-    final managerName = isCorp ? corp!.managerName : null;
+        (isCorp ? corp.managerPhone : individual?.mobile) ?? '';
+    final email = isCorp ? corp.officialEmail : null;
+    final managerName = isCorp ? corp.managerName : null;
     final kyc = profile!.kycStatus ?? 'none';
 
     return Column(
@@ -625,7 +625,7 @@ class _CustomerBody extends StatelessWidget {
             ('Manager', managerName),
           if (phone.isNotEmpty) ('Phone', phone),
           if (email != null && email.isNotEmpty) ('Email', email),
-          if (isCorp && corp!.panCin.isNotEmpty) ('PAN / CIN', corp.panCin),
+          if (isCorp && corp.panCin.isNotEmpty) ('PAN / CIN', corp.panCin),
           if (!isCorp && (individual?.aadhaarLast4.isNotEmpty ?? false))
             ('Aadhaar (last 4)', 'XXXX XXXX ${individual!.aadhaarLast4}'),
           ('User id', userId),

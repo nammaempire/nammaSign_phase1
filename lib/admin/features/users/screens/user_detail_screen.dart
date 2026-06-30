@@ -520,9 +520,9 @@ Future<void> _confirmAdminDelete(
   showDialog<void>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => AlertDialog(
+    builder: (_) => const AlertDialog(
       content: Row(
-        children: const [
+        children: [
           SizedBox(
             width: 22,
             height: 22,

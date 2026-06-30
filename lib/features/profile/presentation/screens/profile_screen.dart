@@ -81,14 +81,14 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.xxl),
 
                 // ACCOUNT TYPE — read-only display of the user's choice
-                _SectionLabel('ACCOUNT TYPE'),
+                const _SectionLabel('ACCOUNT TYPE'),
                 const SizedBox(height: AppSpacing.md),
                 _AccountTypeChooser(selected: accountType),
 
                 const SizedBox(height: AppSpacing.xxl),
 
                 // DASHBOARD — campaign stat tiles
-                _SectionLabel('DASHBOARD'),
+                const _SectionLabel('DASHBOARD'),
                 const SizedBox(height: AppSpacing.md),
                 const _DashboardGrid(),
 

@@ -35,7 +35,7 @@ class PremiumTab extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.star_rounded,
                   size: 14,
                   color: AppColors.primary,
@@ -146,14 +146,14 @@ class _PremiumFeatureCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
 
           // 2x2 feature grid
-          Row(
+          const Row(
             children: [
               Expanded(child: _Feature(label: 'BLR Airport')),
               Expanded(child: _Feature(label: 'Metro stations')),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          Row(
+          const Row(
             children: [
               Expanded(child: _Feature(label: 'MG Road')),
               Expanded(child: _Feature(label: 'Tech Park hubs')),
@@ -173,7 +173,7 @@ class _Feature extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.check_rounded, size: 18, color: AppColors.success),
+        const Icon(Icons.check_rounded, size: 18, color: AppColors.success),
         const SizedBox(width: AppSpacing.sm),
         Flexible(
           child: Text(

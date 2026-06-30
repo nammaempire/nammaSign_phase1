@@ -38,10 +38,9 @@ abstract class UserProfileRepository {
 
 class FirestoreUserProfileRepository implements UserProfileRepository {
   FirestoreUserProfileRepository({
-    required FirebaseFirestore firestore,
-    required FirebaseStorage storage,
-  })  : _firestore = firestore,
-        _storage = storage;
+    required this._firestore,
+    required this._storage,
+  });
 
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;

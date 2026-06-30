@@ -12,8 +12,7 @@ import '../domain/legal_page.dart';
 ///
 /// Admin-side: list/edit any page including drafts.
 class LegalRepository {
-  LegalRepository({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+  LegalRepository({required this._firestore});
 
   final FirebaseFirestore _firestore;
 

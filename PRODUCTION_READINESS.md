@@ -1,3 +1,12 @@
+> ⚠️ **SUPERSEDED — historical document (2026-05-24).**
+> This report describes an early, pre-backend state of the app (FakeAuth, no
+> Cloud Functions, ~6,500 LOC) that no longer reflects the codebase. The app
+> now has real Firebase auth, Firestore, Storage, Cloud Functions, Crashlytics,
+> and ~23k LOC. **For the current production status and outstanding blockers,
+> see `PRODUCTION_BLOCKERS.md`.** Kept here only for historical context.
+
+---
+
 # NammaSign — Production Readiness Report
 
 Generated: 2026-05-24

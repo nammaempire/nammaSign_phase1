@@ -254,7 +254,8 @@ exports.sweepEndedCampaigns = onSchedule(
 //      don't keep referencing a phantom user).
 //   2. Delete all docs in users/{uid}/notifications and users/{uid}/kycDocs.
 //   3. Delete the user doc itself.
-//   4. Delete the user's files in Storage (kyc/{uid}/* and creatives/{uid}/*).
+//   4. Delete the user's files in Storage (users/{uid}/* avatar+KYC,
+//      bookings/{uid}/* creatives, invoices/{uid}/* invoices).
 //   5. Delete the Firebase Auth account.
 //   6. Best-effort delete of the user's payments docs.
 
@@ -317,9 +318,13 @@ async function _hardDeleteUser(uid) {
   // 3. Delete the user doc.
   await userRef.delete().catch(() => {});
 
-  // 4. Storage files.
-  await _deleteStoragePath(`kyc/${uid}/`);
-  await _deleteStoragePath(`creatives/${uid}/`);
+  // 4. Storage files. Paths must match where the client actually uploads:
+  //    - users/{uid}/...    avatar + KYC docs  (see user_profile_repository.dart)
+  //    - bookings/{uid}/... creatives          (see booking_provider.dart)
+  //    - invoices/{uid}/... server-generated invoices (storage.rules)
+  await _deleteStoragePath(`users/${uid}/`);
+  await _deleteStoragePath(`bookings/${uid}/`);
+  await _deleteStoragePath(`invoices/${uid}/`);
 
   // 5. Firebase Auth user. Wrap so a missing auth user doesn't crash the
   // whole pipeline — sometimes the Firestore doc outlives the auth user.

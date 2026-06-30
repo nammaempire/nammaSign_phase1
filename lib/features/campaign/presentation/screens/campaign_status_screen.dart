@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
@@ -215,13 +214,13 @@ class _UnderReviewBody extends StatelessWidget {
                 dotKind: TimelineDotKind.filled,
                 dotColor: AppColors.success,
               ),
-              TimelineStep(
+              const TimelineStep(
                 title: 'Admin review',
                 subtitle: 'In progress  ·  within ~2 hours',
                 dotKind: TimelineDotKind.filled,
                 dotColor: AppColors.primary,
               ),
-              TimelineStep(
+              const TimelineStep(
                 title: 'Goes live on board',
                 subtitle: 'Once approved',
                 dotKind: TimelineDotKind.empty,
@@ -485,7 +484,7 @@ class _NeedsChangesBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CampaignStatusHero(
+          const CampaignStatusHero(
             circleColor: _pinkCircle,
             icon: Icons.error_outline_rounded,
             iconColor: _pinkPillFg,
@@ -496,7 +495,7 @@ class _NeedsChangesBody extends StatelessWidget {
             dashedRing: false,
             titleLeading: 'Campaign ',
             titleTrailingItalic: 'not approved.',
-            subtitle: const Text(
+            subtitle: Text(
               'Your campaign did not pass our admin review. '
               'Please see the feedback below.',
             ),

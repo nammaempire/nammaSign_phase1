@@ -8,8 +8,7 @@ import '../domain/help_faq.dart';
 /// are split so the user query can be safely constrained to published
 /// rows (matching the Firestore rule).
 class FaqsRepository {
-  FaqsRepository({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+  FaqsRepository({required this._firestore});
 
   final FirebaseFirestore _firestore;
 
