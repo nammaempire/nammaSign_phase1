@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Design tokens for the NammaSign admin portal.
+/// Design tokens for the Reset95 admin portal.
 class AdminColors {
   AdminColors._();
 

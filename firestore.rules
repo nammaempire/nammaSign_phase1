@@ -8,13 +8,28 @@ service cloud.firestore {
       return isSignedIn() &&
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
+    // An owner-initiated write to their user doc is only allowed to touch
+    // kycStatus in limited ways: leave it unchanged, or set it to
+    // 'none'/'pending' (e.g. when uploading documents). Flipping it to
+    // 'verified'/'rejected' is reserved for admins / Cloud Functions.
+    function ownerKycOk() {
+      return !('kycStatus' in request.resource.data)
+        || request.resource.data.kycStatus in ['none', 'pending']
+        || (resource != null
+            && request.resource.data.kycStatus == resource.data.kycStatus);
+    }
 
     // ---- USERS ----
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow write: if isOwner(uid) || isAdmin();
       // Allow admins to list users (for the admin Users screen).
       allow list: if isAdmin();
+      // Admins can write anything — this is how KYC verify/reject works.
+      allow write: if isAdmin();
+      // Owners can update their own profile, but CANNOT self-verify: the
+      // kycStatus field is gated by ownerKycOk() (only 'none'/'pending' or
+      // unchanged), so verification stays admin-controlled.
+      allow write: if isOwner(uid) && ownerKycOk();
 
       match /notifications/{notifId} {
         allow read, update: if isOwner(uid);

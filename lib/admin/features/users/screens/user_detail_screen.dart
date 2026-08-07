@@ -206,6 +206,16 @@ class _DocRow extends StatelessWidget {
     }
   }
 
+  bool get _isPdf => Uri.decodeFull(url).toLowerCase().contains('.pdf');
+
+  void _openFull(BuildContext context) {
+    if (_isPdf) return;
+    showDialog<void>(
+      context: context,
+      builder: (_) => _AdminImageViewer(url: url),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -213,39 +223,118 @@ class _DocRow extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: AdminColors.border)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AdminColors.primarySurface,
+          Row(
+            children: [
+              Expanded(
+                child: Text(_displayLabel, style: AdminText.label),
+              ),
+              TextButton.icon(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: url));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('URL copied — paste in a new tab.'),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.content_copy, size: 16),
+                label: const Text('Copy URL'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () => _openFull(context),
+            child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-            ),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.description_outlined,
-              color: AdminColors.primary,
-              size: 18,
+              child: SizedBox(
+                height: 170,
+                width: double.infinity,
+                child: _isPdf
+                    ? _placeholder(
+                        'PDF document — use Copy URL to open',
+                        Icons.picture_as_pdf_outlined,
+                      )
+                    : Image.network(
+                        url,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (c, child, p) => p == null
+                            ? child
+                            : const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                        errorBuilder: (c, e, s) => _placeholder(
+                          'Preview unavailable — use Copy URL',
+                          Icons.broken_image_outlined,
+                        ),
+                      ),
+              ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(_displayLabel, style: AdminText.label),
-          ),
-          TextButton.icon(
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: url));
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('URL copied — paste in a new tab.'),
+        ],
+      ),
+    );
+  }
+
+  Widget _placeholder(String text, IconData icon) {
+    return Container(
+      color: AdminColors.primarySurface,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 28, color: AdminColors.primary),
+          const SizedBox(height: 6),
+          Text(text, textAlign: TextAlign.center, style: AdminText.bodyMedium),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-screen, zoomable viewer for a KYC document image in the admin panel.
+class _AdminImageViewer extends StatelessWidget {
+  const _AdminImageViewer({required this.url});
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.black,
+      insetPadding: EdgeInsets.zero,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 5,
+              child: Image.network(
+                url,
+                fit: BoxFit.contain,
+                errorBuilder: (c, e, s) => const Center(
+                  child: Text(
+                    'Could not load image.',
+                    style: TextStyle(color: Colors.white),
                   ),
-                );
-              }
-            },
-            icon: const Icon(Icons.content_copy, size: 16),
-            label: const Text('Copy URL'),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: IconButton(
+              icon: const Icon(Icons.close_rounded, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
           ),
         ],
       ),
@@ -401,7 +490,9 @@ class _ActionsPanelState extends ConsumerState<_ActionsPanel> {
           child: _LabelRows(rows: [
             if (phone.isNotEmpty) ('Phone', phone),
             if (email.isNotEmpty) ('Email', email),
-            if (u.corporate != null) ('PAN / CIN', u.corporate!.panCin),
+            if (u.corporate != null) ('Company PAN', u.corporate!.panCin),
+            if (u.corporate != null && u.corporate!.gstin.isNotEmpty)
+              ('GSTIN', u.corporate!.gstin),
             if (u.individual != null &&
                 u.individual!.aadhaarLast4.isNotEmpty)
               ('Aadhaar', 'XXXX XXXX ${u.individual!.aadhaarLast4}'),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_routes.dart';
@@ -37,9 +38,18 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.colors.bg,
-      body: navigationShell,
+    // Status-bar icons must contrast with the theme background: dark icons
+    // on the light theme, light icons on the dark theme.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: context.colors.bg,
+        body: navigationShell,
       bottomNavigationBar: SafeArea(
         top: false,
         child: Container(
@@ -63,6 +73,7 @@ class MainShell extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

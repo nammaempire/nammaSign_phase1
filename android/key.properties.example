@@ -7,7 +7,7 @@
 #
 # Then point storeFile at that .jks path (absolute path is simplest).
 
-storePassword=YOUR_KEYSTORE_PASSWORD
-keyPassword=YOUR_KEY_PASSWORD
+storePassword=Nammasign2026
+keyPassword=Nammasign2026
 keyAlias=nammasign
 storeFile=/absolute/path/to/nammasign-release.jks

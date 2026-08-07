@@ -112,13 +112,21 @@ class CorporateProfile {
   const CorporateProfile({
     required this.name,
     required this.panCin,
+    required this.gstin,
     required this.officialEmail,
     required this.managerName,
     required this.managerPhone,
   });
 
   final String name;
+
+  /// Company PAN (10 chars). The field is still named `panCin` in Firestore
+  /// for backward compatibility with earlier records.
   final String panCin;
+
+  /// GSTIN (15 chars). Primary corporate verification identifier.
+  final String gstin;
+
   final String officialEmail;
   final String managerName;
   final String managerPhone;
@@ -127,6 +135,7 @@ class CorporateProfile {
     return CorporateProfile(
       name: (m['name'] as String?) ?? '',
       panCin: (m['panCin'] as String?) ?? '',
+      gstin: (m['gstin'] as String?) ?? '',
       officialEmail: (m['officialEmail'] as String?) ?? '',
       managerName: (m['managerName'] as String?) ?? '',
       managerPhone: (m['managerPhone'] as String?) ?? '',
@@ -136,6 +145,7 @@ class CorporateProfile {
   Map<String, dynamic> toMap() => {
         'name': name,
         'panCin': panCin,
+        'gstin': gstin,
         'officialEmail': officialEmail,
         'managerName': managerName,
         'managerPhone': managerPhone,

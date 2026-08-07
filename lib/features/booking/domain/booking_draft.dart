@@ -14,6 +14,7 @@ class BookingDraft {
     this.durationDays,
     this.purpose,
     this.creativeFile,
+    this.creativeImages = const <PickedFile>[],
     this.creativeIsVideo = false,
   });
 
@@ -32,6 +33,7 @@ class BookingDraft {
 
   // Creative (image or video)
   final PickedFile? creativeFile;
+  final List<PickedFile> creativeImages;
   final bool creativeIsVideo;
 
   BookingDraft copyWith({
@@ -44,6 +46,7 @@ class BookingDraft {
     int? durationDays,
     String? purpose,
     PickedFile? creativeFile,
+    List<PickedFile>? creativeImages,
     bool? creativeIsVideo,
   }) {
     return BookingDraft(
@@ -56,6 +59,7 @@ class BookingDraft {
       durationDays: durationDays ?? this.durationDays,
       purpose: purpose ?? this.purpose,
       creativeFile: creativeFile ?? this.creativeFile,
+      creativeImages: creativeImages ?? this.creativeImages,
       creativeIsVideo: creativeIsVideo ?? this.creativeIsVideo,
     );
   }

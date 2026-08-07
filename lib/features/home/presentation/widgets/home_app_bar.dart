@@ -11,7 +11,7 @@ import '../../../../core/widgets/brand_logo.dart';
 import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../../../../app/theme/app_palette.dart';
 
-/// Home top bar: hamburger menu (left), centered NammaSign mark + brand
+/// Home top bar: hamburger menu (left), centered Reset95 mark + brand
 /// text, notification bell with live unread badge (right).
 class HomeAppBar extends ConsumerWidget {
   const HomeAppBar({super.key});
@@ -41,7 +41,7 @@ class HomeAppBar extends ConsumerWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                'NammaSign',
+                'Reset95',
                 style: AppTextStyles.brandHuge.copyWith(
                   fontSize: 20,
                   color: context.colors.textPrimary,

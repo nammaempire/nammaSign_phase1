@@ -47,6 +47,16 @@ class PickedFile {
     return PickedFile.from(file);
   }
 
+  /// Pick multiple files at once via file_selector. Empty if cancelled.
+  static Future<List<PickedFile>> pickMultiple({
+    required List<String> extensions,
+    String label = 'files',
+  }) async {
+    final typeGroup = XTypeGroup(label: label, extensions: extensions);
+    final files = await openFiles(acceptedTypeGroups: [typeGroup]);
+    return Future.wait(files.map(PickedFile.from));
+  }
+
   /// Validates this picked file against an allowed extension list + a
   /// size cap. Returns `null` when the file is good; otherwise returns a
   /// short user-facing error string ready to drop into a snackbar.

@@ -20,6 +20,10 @@ abstract class UserProfileRepository {
   /// CorporateSignupScreen Continue button.
   Future<void> saveCorporate(String uid, CorporateProfile data);
 
+  /// Writes ONLY the corporate `org` details WITHOUT changing the user's
+  /// accountType. Used when an individual advertises as a corporate.
+  Future<void> saveCorporateOrg(String uid, CorporateProfile data);
+
   /// Writes the individual profile sub-object. Called from the
   /// IndividualSignupScreen Continue button.
   Future<void> saveIndividual(String uid, IndividualProfile data);
@@ -79,6 +83,17 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
     await _doc(uid).set(
       {
         'accountType': AccountType.corporate.storageValue,
+        'org': data.toMap(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+  }
+
+  @override
+  Future<void> saveCorporateOrg(String uid, CorporateProfile data) async {
+    await _doc(uid).set(
+      {
         'org': data.toMap(),
         'updatedAt': FieldValue.serverTimestamp(),
       },

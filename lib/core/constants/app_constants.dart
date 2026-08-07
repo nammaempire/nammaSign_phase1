@@ -2,7 +2,7 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'NammaSign';
+  static const String appName = 'Reset95';
   static const String appBrandSubtitle = 'AD-TECH MARKETPLACE';
   static const String appTagline = 'Own the streets. Light up the city.';
   static const String appVersionLabel = 'V5.0';
@@ -11,7 +11,7 @@ class AppConstants {
 
   /// Logo assets. Drop your actual PNGs (transparent background preferred)
   /// at these paths under `assets/icons/`.
-  /// - logoLockup: full lockup with mark + "NAMMASIGN" + tagline.
+  /// - logoLockup: full lockup with mark + "RESET95" + tagline.
   /// - logoMark: just the geometric NS mark, no text. Used in small spaces
   ///   like the app bar and the login card.
   static const String logoLockup = 'assets/icons/nammasign_logo.png';

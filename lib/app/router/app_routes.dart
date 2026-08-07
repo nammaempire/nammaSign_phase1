@@ -37,6 +37,7 @@ class AppRoutes {
 
   // Profile sub-screens
   static const String personalInfo = '/personal-info';
+  static const String kycDocuments = '/kyc-documents';
 
   // Notifications inbox
   static const String notifications = '/notifications';

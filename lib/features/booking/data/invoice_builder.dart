@@ -4,7 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 /// One booking → one tax-style PDF invoice.
 ///
-/// Builds a clean A4 invoice with NammaSign brand colours: header band,
+/// Builds a clean A4 invoice with Reset95 brand colours: header band,
 /// order reference, billed-to block (when we have user identity), line
 /// items, subtotal + 18% GST + total, and a footer with payment status.
 /// Designed to be readable on a phone screen but also printable.
@@ -54,7 +54,7 @@ class InvoiceData {
 class InvoiceBuilder {
   InvoiceBuilder._();
 
-  /// NammaSign brand purple used in the PDF.
+  /// Reset95 brand purple used in the PDF.
   static const _purple = PdfColor.fromInt(0xFF7B2FE3);
   static const _darkInk = PdfColor.fromInt(0xFF1A1A22);
   static const _mutedInk = PdfColor.fromInt(0xFF6E6E7C);
@@ -64,8 +64,8 @@ class InvoiceBuilder {
   /// `Printing.sharePdf` / `Printing.layoutPdf`.
   static Future<List<int>> build(InvoiceData data) async {
     final doc = pw.Document(
-      title: 'NammaSign invoice ${data.orderRef}',
-      author: 'NammaSign',
+      title: 'Reset95 invoice ${data.orderRef}',
+      author: 'Reset95',
     );
 
     final fmtAmt = NumberFormat.decimalPattern('en_IN');
@@ -114,7 +114,7 @@ class InvoiceBuilder {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  'NammaSign',
+                  'Reset95',
                   style: pw.TextStyle(
                     color: PdfColors.white,
                     fontSize: 22,
@@ -181,7 +181,7 @@ class InvoiceBuilder {
               if (data.customerName == null &&
                   data.customerEmail == null &&
                   data.customerPhone == null)
-                'NammaSign customer',
+                'Reset95 customer',
             ],
           ),
         ),
@@ -354,13 +354,13 @@ class InvoiceBuilder {
         pw.SizedBox(height: 4),
         pw.Text(
           'GST is computed at 18% on the taxable subtotal as per Indian '
-          'tax regulations. NammaSign collects GST on behalf of the '
+          'tax regulations. Reset95 collects GST on behalf of the '
           'government. Save this invoice for your records.',
           style: const pw.TextStyle(color: _mutedInk, fontSize: 8, lineSpacing: 2),
         ),
         pw.SizedBox(height: 6),
         pw.Text(
-          'Questions? nammaempire@gmail.com',
+          'Questions? reset95@gmail.com',
           style: const pw.TextStyle(color: _mutedInk, fontSize: 9),
         ),
       ],

@@ -31,6 +31,7 @@ import '../../features/notifications/data/fcm_bootstrap.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/profile/presentation/screens/personal_info_screen.dart';
+import '../../features/profile/presentation/screens/kyc_documents_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/user/presentation/providers/user_profile_provider.dart';
 import '../../shared/providers/app_prefs_provider.dart';
@@ -178,6 +179,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.personalInfo,
         builder: (_, _) => const PersonalInfoScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.kycDocuments,
+        builder: (_, _) => const KycDocumentsScreen(),
       ),
       GoRoute(
         path: AppRoutes.notifications,

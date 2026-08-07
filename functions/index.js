@@ -398,3 +398,131 @@ exports.adminDeleteUser = onCall(
     }
   }
 );
+
+// =============================================================================
+// CORPORATE KYC VERIFICATION (GSTIN + PAN)
+// =============================================================================
+//
+// Verifies a corporate account's GSTIN + Company PAN against a third-party KYC
+// provider (Surepass / Cashfree / Sandbox.co.in / etc.). Provider-AGNOSTIC and
+// INERT until you configure two environment values in /functions (e.g. a
+// functions/.env file, then `firebase deploy --only functions`):
+//
+//   KYC_PROVIDER_URL=https://api.your-provider.com
+//   KYC_PROVIDER_KEY=your_api_token
+//
+// Until those are set it returns {verified:false, reason:'verification_not_configured'}
+// and never auto-verifies anyone (safe default). Once set, swap the request /
+// response shapes in the marked block to match your provider's GST endpoint.
+
+const KYC_PROVIDER_URL = process.env.KYC_PROVIDER_URL || "";
+const KYC_PROVIDER_KEY = process.env.KYC_PROVIDER_KEY || "";
+
+// Normalise a company name for comparison: upper-case, strip punctuation and
+// common suffixes (PVT / LTD / LLP …) so "Acme Pvt. Ltd." == "ACME".
+function _normaliseCompanyName(s) {
+  return String(s || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, " ")
+    .replace(/\b(PVT|PRIVATE|LTD|LIMITED|LLP|AND|CO|COMPANY|THE)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+exports.verifyCorporateKyc = onCall(
+  { region: REGION },
+  async (request) => {
+    const uid = request.auth && request.auth.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Sign in required.");
+    }
+    const gstin = String((request.data && request.data.gstin) || "")
+      .toUpperCase()
+      .trim();
+    const pan = String((request.data && request.data.pan) || "")
+      .toUpperCase()
+      .trim();
+
+    // Shape checks (defence in depth — the app validates too).
+    const gstinOk =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(gstin);
+    const panOk = /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan);
+    if (!gstinOk || !panOk) {
+      throw new HttpsError("invalid-argument", "Invalid GSTIN or PAN format.");
+    }
+    // Characters 3–12 of a GSTIN are the entity's PAN.
+    if (gstin.substring(2, 12) !== pan) {
+      throw new HttpsError("failed-precondition", "GSTIN does not match PAN.");
+    }
+
+    // Not configured → safe no-op (never auto-verifies).
+    if (!KYC_PROVIDER_URL || !KYC_PROVIDER_KEY) {
+      console.warn("verifyCorporateKyc: provider not configured; skipping.");
+      return { verified: false, reason: "verification_not_configured" };
+    }
+
+    // ---- Call the provider (adjust to YOUR provider's API) --------------
+    let legalName = "";
+    let providerStatus = "";
+    try {
+      const res = await fetch(`${KYC_PROVIDER_URL}/gstin/verify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${KYC_PROVIDER_KEY}`,
+        },
+        body: JSON.stringify({ gstin }),
+      });
+      const json = await res.json();
+      // TODO: map these to your provider's actual response shape.
+      const data = json.data || json;
+      legalName = data.legal_name || data.legalName || data.lgnm || "";
+      providerStatus = data.status || data.sts || "";
+    } catch (e) {
+      console.error("verifyCorporateKyc: provider call failed", e);
+      throw new HttpsError("unavailable", "Verification service unavailable.");
+    }
+    // --------------------------------------------------------------------
+
+    const active = String(providerStatus).toLowerCase().includes("active");
+
+    // Compare the provider's legal name to the company name the user entered
+    // (stored at users/{uid}.org.name by saveCorporate).
+    const userSnap = await db.collection("users").doc(uid).get();
+    const enteredName =
+      (userSnap.exists &&
+        userSnap.data().org &&
+        userSnap.data().org.name) ||
+      "";
+    const nameMatches =
+      _normaliseCompanyName(legalName) !== "" &&
+      _normaliseCompanyName(legalName) === _normaliseCompanyName(enteredName);
+
+    const verified = active && nameMatches;
+
+    await db.collection("users").doc(uid).set(
+      {
+        kycStatus: verified ? "verified" : "pending",
+        kycCorporate: {
+          gstin: gstin,
+          pan: pan,
+          legalName: legalName,
+          providerStatus: providerStatus,
+          nameMatches: nameMatches,
+          verifiedAt: verified
+            ? admin.firestore.FieldValue.serverTimestamp()
+            : null,
+        },
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return {
+      verified: verified,
+      legalName: legalName,
+      nameMatches: nameMatches,
+      active: active,
+    };
+  }
+);

@@ -71,7 +71,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'NammaSign Admin',
+                    'Reset95 Admin',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,

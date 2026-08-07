@@ -112,6 +112,9 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
           CorporateProfile(
             name: _company.text.trim(),
             panCin: _pan.text.trim(),
+            // Preserve the GSTIN captured at signup (not edited on this
+            // screen) so saving other fields doesn't wipe it.
+            gstin: profile.corporate?.gstin ?? '',
             officialEmail: _email.text.trim(),
             managerName: _managerName.text.trim(),
             managerPhone: _managerPhone.text.trim(),

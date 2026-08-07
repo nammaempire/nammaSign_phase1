@@ -113,10 +113,14 @@ class ProfileScreen extends ConsumerWidget {
                       icon: Icons.description_outlined,
                       title: 'KYC documents',
                       subtitle: kycDocsLabel,
+                      // Show VERIFIED (green) only after an admin verifies;
+                      // until then show PENDING (amber) to the user.
                       subtitleSuffix:
-                          kycStatus == 'verified' ? 'VERIFIED' : null,
-                      onTap: () =>
-                          context.showSnack('KYC documents (Phase 1b)'),
+                          kycStatus == 'verified' ? 'VERIFIED' : 'PENDING',
+                      subtitleSuffixColor: kycStatus == 'verified'
+                          ? AppColors.success
+                          : AppColors.warning,
+                      onTap: () => context.push(AppRoutes.kycDocuments),
                     ),
                     const SettingsTile(
                       icon: Icons.account_balance_wallet_outlined,
@@ -153,16 +157,16 @@ class ProfileScreen extends ConsumerWidget {
                     SettingsTile(
                       icon: Icons.mail_outline_rounded,
                       title: 'Contact us',
-                      subtitle: 'nammaempire@gmail.com',
+                      subtitle: 'reset95@gmail.com',
                       onTap: () async {
                         await Clipboard.setData(
                           const ClipboardData(
-                            text: 'nammaempire@gmail.com',
+                            text: 'reset95@gmail.com',
                           ),
                         );
                         if (context.mounted) {
                           context.showSnack(
-                            'Email copied — nammaempire@gmail.com',
+                            'Email copied — reset95@gmail.com',
                           );
                         }
                       },
@@ -192,7 +196,7 @@ class ProfileScreen extends ConsumerWidget {
                     SettingsTile(
                       icon: Icons.description_outlined,
                       title: 'Terms of service',
-                      subtitle: 'The agreement you accept by using NammaSign',
+                      subtitle: 'The agreement you accept by using Reset95',
                       onTap: () => context.push(
                         AppRoutes.legalFor(LegalPageId.terms),
                       ),
@@ -685,6 +689,9 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      // Let the title + content scroll so the dialog never overflows when the
+      // keyboard opens (it's tall with the bullet list + confirm field).
+      scrollable: true,
       icon: const Icon(
         Icons.warning_amber_rounded,
         size: 36,
@@ -696,7 +703,7 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "This permanently removes your NammaSign account. Once it's "
+            "This permanently removes your Reset95 account. Once it's "
             "done it can't be undone.",
             style: AppTextStyles.bodyMedium.copyWith(
               color: context.colors.textPrimary,
@@ -877,7 +884,7 @@ class _ThemeTile extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Pick a theme. NammaSign will remember your choice.',
+                  'Pick a theme. Reset95 will remember your choice.',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: sheetCtx.colors.textSecondary,
                   ),

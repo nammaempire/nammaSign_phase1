@@ -54,16 +54,18 @@ class AppPalette extends ThemeExtension<AppPalette> {
   // Variants
   // ---------------------------------------------------------------------------
 
-  /// The lavender-tinted light palette the app was originally designed in.
+  /// Clean, airy light palette — a near-white cool neutral with just a
+  /// whisper of the brand tint, so white cards pop and text stays crisp.
+  /// (Replaces the earlier muddy lavender background.)
   static const AppPalette light = AppPalette(
-    bg: Color(0xFFF6F1FA),
-    surface: Color(0xFFEDE4FA),
+    bg: Color(0xFFF5F6FB),
+    surface: Color(0xFFECEDF5),
     card: Color(0xFFFFFFFF),
-    textPrimary: Color(0xFF1A1A22),
-    textSecondary: Color(0xFF5E5E68),
-    textTertiary: Color(0xFF9494A0),
-    border: Color(0xFFE5DEF1),
-    shadow: Color(0x14000000),
+    textPrimary: Color(0xFF16161D),
+    textSecondary: Color(0xFF585A66),
+    textTertiary: Color(0xFF969AA6),
+    border: Color(0xFFE4E5EF),
+    shadow: Color(0x1A101828),
   );
 
   /// Companion dark palette. Hand-tuned so brand purple still pops against

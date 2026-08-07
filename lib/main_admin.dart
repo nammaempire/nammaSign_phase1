@@ -6,7 +6,7 @@ import 'admin/app/admin_app.dart';
 import 'core/utils/logger.dart';
 import 'firebase_options.dart';
 
-/// Separate entry point for the NammaSign **admin web portal**.
+/// Separate entry point for the Reset95 **admin web portal**.
 ///
 /// Run dev:    flutter run -t lib/main_admin.dart -d chrome
 /// Build prod: flutter build web -t lib/main_admin.dart

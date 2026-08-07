@@ -12,7 +12,7 @@ class AdminApp extends ConsumerWidget {
     final router = ref.watch(adminRouterProvider);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'NammaSign Admin',
+      title: 'Reset95 Admin',
       theme: buildAdminTheme(),
       routerConfig: router,
     );

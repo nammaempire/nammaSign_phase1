@@ -98,12 +98,12 @@ class _PaymentSuccessScreenState
       // CocoaPods dependency required.
       final bytes = await InvoiceBuilder.build(data);
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/NammaSign_invoice_$orderRef.pdf');
+      final file = File('${dir.path}/Reset95_invoice_$orderRef.pdf');
       await file.writeAsBytes(bytes, flush: true);
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'application/pdf')],
-        subject: 'NammaSign invoice — $orderRef',
-        text: 'Tax invoice for your NammaSign booking $orderRef.',
+        subject: 'Reset95 invoice — $orderRef',
+        text: 'Tax invoice for your Reset95 booking $orderRef.',
       );
       await ref.read(analyticsServiceProvider).invoiceDownloaded();
     } catch (e) {
@@ -124,7 +124,7 @@ class _PaymentSuccessScreenState
     final listing = draft.listing;
     final title = draft.campaignTitle;
     final lines = <String>[
-      'NammaSign booking confirmed',
+      'Reset95 booking confirmed',
       '',
       'Order ref: $orderRef',
       if (title != null && title.isNotEmpty) 'Campaign: $title',
@@ -132,12 +132,12 @@ class _PaymentSuccessScreenState
       'Duration: $duration day${duration == 1 ? '' : 's'}',
       'Total: Rs $amount (incl. 18% GST)',
       '',
-      'Track it in the NammaSign app — History tab.',
+      'Track it in the Reset95 app — History tab.',
     ];
     try {
       await Share.share(
         lines.join('\n'),
-        subject: 'NammaSign booking — $orderRef',
+        subject: 'Reset95 booking — $orderRef',
       );
       await ref.read(analyticsServiceProvider).appBookingShared();
     } catch (e) {

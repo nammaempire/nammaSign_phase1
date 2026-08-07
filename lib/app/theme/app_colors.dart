@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Centralized color tokens for NammaSign.
+/// Centralized color tokens for Reset95.
 ///
 /// Palette pulled from the splash screen design — vivid purple primary
 /// with a darker variant for gradients and a lighter accent for highlights.

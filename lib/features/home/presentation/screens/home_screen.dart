@@ -104,7 +104,7 @@ class _TabHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _Tab(
-            label: 'Local',
+            label: 'Standard',
             badgeText: '$localCount',
             active: index == 0,
             onTap: () => controller.animateTo(0),

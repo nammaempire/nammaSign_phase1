@@ -17,7 +17,7 @@ import '../../../legal/presentation/widgets/consent_footer.dart';
 import '../providers/auth_provider.dart';
 import '../../../../app/theme/app_palette.dart';
 
-/// "Welcome to NammaSign" — phone number entry + social sign-in.
+/// "Welcome to Reset95" — phone number entry + social sign-in.
 /// Matches the Figma exactly: location chip, dark logo card, serif title
 /// with italic purple brand, labeled phone input, send-code CTA, divider,
 /// Google + Apple buttons, create-account link.
@@ -178,7 +178,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   label: 'Continue with Google',
                   leading: _GoogleGlyph(),
                   background: Colors.white,
-                  foreground: context.colors.textPrimary,
+                  // Dark text: the button is white, so the theme's textPrimary
+                  // (white in dark mode) would be invisible.
+                  foreground: AppColors.textPrimaryOnLight,
                   onTap: _onGoogleSignIn,
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -268,7 +270,7 @@ class _LocationChip extends StatelessWidget {
   }
 }
 
-/// Small dark logo card — the NammaSign monogram tinted white, with a
+/// Small dark logo card — the Reset95 monogram tinted white, with a
 /// tiny purple notification dot in the corner.
 class _LogoCard extends StatelessWidget {
   @override
@@ -285,10 +287,11 @@ class _LogoCard extends StatelessWidget {
           ),
           padding: const EdgeInsets.all(8),
           alignment: Alignment.center,
+          // No color tint — render the actual purple/white brand mark.
+          // (color: Colors.white flattened the whole logo into a white square.)
           child: const BrandLogo(
             variant: LogoVariant.mark,
             height: 36,
-            color: Colors.white,
           ),
         ),
         Positioned(
@@ -375,7 +378,9 @@ class _PhoneInputField extends StatelessWidget {
           Text(
             dialCode,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: context.colors.textPrimary,
+              // Fixed dark color: this field's background is always white, so
+              // the theme's (near-white in dark mode) textPrimary is invisible.
+              color: AppColors.textPrimaryOnLight,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -408,19 +413,22 @@ class _PhoneInputField extends StatelessWidget {
                 validator: Validators.phone,
                 onFieldSubmitted: onSubmitted,
                 cursorColor: AppColors.primary,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: context.colors.textPrimary,
+                  // Fixed dark color so the typed number is visible on the
+                  // always-white field (theme textPrimary is white in dark mode).
+                  color: AppColors.textPrimaryOnLight,
                   letterSpacing: 0.5,
                 ),
                 decoration: InputDecoration(
                   filled: false,
                   fillColor: Colors.transparent,
                   hintText: '98765 43210',
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                     fontSize: 16,
-                    color: context.colors.textTertiary,
+                    // Fixed muted color for the placeholder on the white field.
+                    color: AppColors.textTertiaryOnLight,
                   ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,

@@ -67,6 +67,8 @@ class _CreativePreviewState extends State<CreativePreview> {
     try {
       await controller.initialize();
       controller.setLooping(true);
+      await controller.setVolume(0); // muted auto-play preview
+      await controller.play();
       if (!mounted) {
         await controller.dispose();
         return;

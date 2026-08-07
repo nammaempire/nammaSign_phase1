@@ -29,6 +29,14 @@ val hasReleaseSigning = keystorePropertiesFile.exists() &&
     keystoreProperties["storeFile"] != null &&
     keystoreProperties["storePassword"] != null
 
+// Local-testing escape hatch: set the env var ALLOW_DEBUG_SIGNED_RELEASE=true to
+// build a DEBUG-SIGNED release without a keystore. This is for local testing
+// ONLY — such an artifact can NOT be uploaded to the Play Store. The default
+// (env var unset) still fails loudly, so a debug-signed build can never ship by
+// accident.
+val allowDebugSignedRelease =
+    (System.getenv("ALLOW_DEBUG_SIGNED_RELEASE") ?: "").equals("true", ignoreCase = true)
+
 // Abort loudly if a release assembly task is requested without a real keystore,
 // instead of producing a debug-signed (un-shippable) artifact. Scoped to the
 // task graph so debug builds and `flutter run` continue to work with no keystore.
@@ -38,13 +46,23 @@ gradle.taskGraph.whenReady {
         (n.startsWith("assemble") || n.startsWith("bundle") || n.startsWith("package")) &&
             n.endsWith("Release")
     }
-    if (buildingRelease && !hasReleaseSigning) {
+    if (buildingRelease && !hasReleaseSigning && !allowDebugSignedRelease) {
         throw GradleException(
             "Release build requested but android/key.properties is missing or " +
                 "incomplete. A debug-signed release cannot be shipped to the " +
-                "Play Store. Create android/key.properties with keyAlias, " +
-                "keyPassword, storeFile and storePassword pointing at your " +
-                "upload keystore, then rebuild.",
+                "Play Store. Either:\n" +
+                "  • create android/key.properties with keyAlias, keyPassword, " +
+                "storeFile and storePassword pointing at your upload keystore " +
+                "(required for a Play Store build), or\n" +
+                "  • for LOCAL TESTING ONLY, set ALLOW_DEBUG_SIGNED_RELEASE=true " +
+                "to build a debug-signed release that cannot be published.",
+        )
+    }
+    if (buildingRelease && !hasReleaseSigning && allowDebugSignedRelease) {
+        logger.warn(
+            "⚠️  Building a DEBUG-SIGNED release (ALLOW_DEBUG_SIGNED_RELEASE=true). " +
+                "For LOCAL TESTING ONLY — this artifact cannot be uploaded to the " +
+                "Play Store.",
         )
     }
 }
@@ -54,12 +72,16 @@ android {
     // Override Flutter's default (currently 34) — file_picker's
     // flutter_plugin_android_lifecycle dep now requires compileSdk 36.
     compileSdk = 36
-    ndkVersion = flutter.ndkVersion
+    // Pin the NDK to the version the Firebase/plugins require (they all ask
+    // for 28.2.13676358). Using an explicit, installed version ensures the
+    // release-bundle debug-symbol strip step finds the NDK toolchain reliably.
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
 
     defaultConfig {
         // Production application id. Must match the package registered in
@@ -85,26 +107,30 @@ android {
 
     buildTypes {
         release {
-            // Only ever sign release with the real upload key. If the keystore
-            // is absent the build is aborted above (gradle.taskGraph.whenReady)
-            // rather than falling back to debug signing.
+            // Sign release with the real upload key. If the keystore is absent
+            // the build is aborted above (gradle.taskGraph.whenReady), unless the
+            // ALLOW_DEBUG_SIGNED_RELEASE opt-in is set for local testing — then we
+            // fall back to debug signing (which can never be shipped to Play).
             signingConfig = if (hasReleaseSigning) {
                 signingConfigs.getByName("release")
+            } else if (allowDebugSignedRelease) {
+                signingConfigs.getByName("debug")
             } else {
                 null
             }
-            // R8 code shrinking + obfuscation, with keep rules in
-            // proguard-rules.pro (Firebase, Crashlytics line numbers, Flutter
-            // embedding). The app serializes via generated json_serializable /
-            // freezed code (no reflection), so shrinking is safe here.
-            // NOTE: always smoke-test the release build after changing deps —
-            // a missing keep rule only surfaces at runtime in release.
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
+            // R8 code shrinking + obfuscation is temporarily DISABLED: with it
+            // on, the release build crashed on launch ("keeps stopping"), which
+            // means a keep rule is missing for some dependency. Ship working
+            // first; re-enable below once the missing rule is identified from a
+            // release logcat and added to proguard-rules.pro, then smoke-tested.
+            //   isMinifyEnabled = true
+            //   isShrinkResources = true
+            //   proguardFiles(
+            //       getDefaultProguardFile("proguard-android-optimize.txt"),
+            //       "proguard-rules.pro",
+            //   )
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

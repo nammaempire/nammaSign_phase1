@@ -6,7 +6,7 @@ import '../../app/theme/app_palette.dart';
 
 enum LogoVariant { lockup, mark }
 
-/// Brand logo. Loads the actual NammaSign logo from
+/// Brand logo. Loads the actual Reset95 logo from
 /// `assets/icons/nammasign_logo.png` (lockup) or `nammasign_mark.png`
 /// (mark only). If the asset is missing — e.g. during early development
 /// before the file is dropped in — falls back to a stylized "NS" placeholder
@@ -74,7 +74,7 @@ class _Fallback extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: Text(
-          'NS',
+          'R',
           style: AppTextStyles.brandHuge.copyWith(
             fontSize: height * 0.45,
             color: color.computeLuminance() > 0.5
@@ -96,7 +96,7 @@ class _Fallback extends StatelessWidget {
         ),
         SizedBox(height: height * 0.06),
         Text(
-          'NAMMASIGN',
+          'RESET95',
           style: AppTextStyles.brandHuge.copyWith(
             fontSize: height * 0.18,
             color: color,

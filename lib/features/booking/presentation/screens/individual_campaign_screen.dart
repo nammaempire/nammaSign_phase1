@@ -17,7 +17,9 @@ import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/booking_top_bar.dart';
 import '../widgets/creative_preview.dart';
+import '../widgets/creative_slideshow_preview.dart';
 import '../widgets/creative_upload_button.dart';
+import '../widgets/creative_thumbs.dart';
 import '../../../../app/theme/app_palette.dart';
 
 /// Step 2 — individual flow. Simpler form: name, purpose, message, fixed
@@ -62,29 +64,61 @@ class _IndividualCampaignScreenState
   }
 
   Future<void> _pick({required bool isVideo}) async {
-    final allowed = isVideo
-        ? UploadLimits.creativeVideoExtensions
-        : UploadLimits.creativeImageExtensions;
-    final maxBytes = isVideo
-        ? UploadLimits.creativeVideoMaxBytes
-        : UploadLimits.creativeImageMaxBytes;
+    if (isVideo) {
+      await _pickVideo();
+    } else {
+      await _pickImages();
+    }
+  }
+
+  Future<void> _pickImages() async {
+    final allowed = UploadLimits.creativeImageExtensions;
+    final maxBytes = UploadLimits.creativeImageMaxBytes;
     try {
-      final file = await PickedFile.pick(
+      final existing = ref.read(bookingProvider).creativeImages;
+      final picked = await PickedFile.pickMultiple(
         extensions: allowed,
-        label: isVideo ? 'videos' : 'images',
+        label: 'images',
       );
+      if (picked.isEmpty) return;
+      final valid = <PickedFile>[];
+      for (final f in picked) {
+        final error =
+            f.validate(allowedExtensions: allowed, maxBytes: maxBytes);
+        if (error != null) {
+          if (mounted) context.showErrorSnack(error);
+          continue;
+        }
+        valid.add(f);
+      }
+      if (valid.isEmpty) return;
+      final combined = [...existing, ...valid];
+      if (combined.length > 5 && mounted) {
+        context.showSnack('Up to 5 photos allowed — extras were skipped.');
+      }
+      ref
+          .read(bookingProvider.notifier)
+          .setCreativeImages(combined.take(5).toList());
+    } catch (e, st) {
+      appLogger.e('File pick failed', error: e, stackTrace: st);
+      if (mounted) context.showErrorSnack('Could not open file picker');
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    final allowed = UploadLimits.creativeVideoExtensions;
+    final maxBytes = UploadLimits.creativeVideoMaxBytes;
+    try {
+      final file =
+          await PickedFile.pick(extensions: allowed, label: 'videos');
       if (file == null) return;
-      final error = file.validate(
-        allowedExtensions: allowed,
-        maxBytes: maxBytes,
-      );
+      final error =
+          file.validate(allowedExtensions: allowed, maxBytes: maxBytes);
       if (error != null) {
         if (mounted) context.showErrorSnack(error);
         return;
       }
-      ref
-          .read(bookingProvider.notifier)
-          .setCreative(file, isVideo: isVideo);
+      ref.read(bookingProvider.notifier).setCreative(file, isVideo: true);
     } catch (e, st) {
       appLogger.e('File pick failed', error: e, stackTrace: st);
       if (mounted) context.showErrorSnack('Could not open file picker');
@@ -92,7 +126,35 @@ class _IndividualCampaignScreenState
   }
 
   void _onContinue() {
+    // Gate payment behind KYC: only a verified user may proceed. Otherwise
+    // show a clear alert and stay on this screen.
+    final kycStatus =
+        ref.read(userProfileProvider).valueOrNull?.kycStatus ?? 'none';
+    if (kycStatus != 'verified') {
+      _showKycNotVerifiedDialog();
+      return;
+    }
     context.push(AppRoutes.bookingReview);
+  }
+
+  void _showKycNotVerifiedDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('KYC verification required'),
+        content: const Text(
+          'Your KYC is not verified yet. Please complete your KYC verification '
+          'first — you can continue to payment once it has been verified by '
+          'our team.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -180,7 +242,13 @@ class _IndividualCampaignScreenState
                     ),
                     const SizedBox(height: AppSpacing.xl),
 
-                    CreativePreview(
+                    (draft.creativeImages.length >= 2 &&
+                            !draft.creativeIsVideo)
+                        ? CreativeSlideshowPreview(
+                            images: draft.creativeImages,
+                            headerLabel: 'Preview  ·  6:00 PM slot',
+                          )
+                        : CreativePreview(
                       file: draft.creativeFile,
                       isVideo: draft.creativeIsVideo,
                       headerLabel: 'Preview  ·  6:00 PM slot',
@@ -192,13 +260,31 @@ class _IndividualCampaignScreenState
                     ),
                     const SizedBox(height: AppSpacing.md),
 
+                    CreativeThumbs(
+                      images: draft.creativeImages,
+                      onRemove: (i) => ref
+                          .read(bookingProvider.notifier)
+                          .removeCreativeImageAt(i),
+                    ),
+
                     CreativeUploadButton(
                       title: draft.creativeFile != null
                           ? 'Replace photo or video'
                           : 'Add photo or video',
-                      subtitle: 'JPG / PNG / MP4  ·  max 10MB',
+                      subtitle: 'Up to 5 photos  ·  or one MP4 video',
                       onPickImage: () => _pick(isVideo: false),
                       onPickVideo: () => _pick(isVideo: true),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.sm),
+                      child: Text(
+                        'Maximum 25 seconds allowed · photos auto-play as a '
+                        'slideshow.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: context.colors.textTertiary,
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: AppSpacing.xxl),

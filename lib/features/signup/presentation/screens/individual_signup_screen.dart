@@ -11,6 +11,7 @@ import '../../../../core/analytics/analytics_service.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/uploads/upload_limits.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/file_upload_slot.dart';
 import '../../../../core/widgets/india_flag.dart';
 import '../../../../core/widgets/labeled_form_field.dart';
@@ -41,6 +42,20 @@ class _IndividualSignupScreenState
 
   PickedFile? _aadhaarFront;
   PickedFile? _aadhaarBack;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill the mobile field with the number the user signed in with,
+    // shown as "98765 43210" (last 10 digits, spaced) so they see the
+    // verified number instead of an empty box.
+    final phone = ref.read(currentUserProvider)?.phone ?? '';
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.length >= 10) {
+      final local = digits.substring(digits.length - 10);
+      _phone.text = '${local.substring(0, 5)} ${local.substring(5)}';
+    }
+  }
 
   @override
   void dispose() {
@@ -98,10 +113,14 @@ class _IndividualSignupScreenState
     }
     // Only persist the last 4 digits of Aadhaar — never the full number.
     final aadhaarDigits = _aadhaar.text.replaceAll(RegExp(r'\D'), '');
-    // Aadhaar is exactly 12 digits — reject partial entries.
-    if (aadhaarDigits.isNotEmpty && aadhaarDigits.length != 12) {
-      context.showErrorSnack('Enter a valid 12-digit Aadhaar number');
-      return;
+    // Aadhaar stays optional here, but if entered it must be a valid 12-digit
+    // number with a correct Verhoeff check digit (rejects typos / fakes).
+    if (aadhaarDigits.isNotEmpty) {
+      final aadhaarError = Validators.aadhaar(aadhaarDigits);
+      if (aadhaarError != null) {
+        context.showErrorSnack(aadhaarError);
+        return;
+      }
     }
     final aadhaarLast4 = aadhaarDigits.length >= 4
         ? aadhaarDigits.substring(aadhaarDigits.length - 4)
@@ -333,7 +352,8 @@ class _PhoneInputWithFlagState extends State<_PhoneInputWithFlag> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          // Match the other signup fields (grey/dark card), not white.
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           border: Border.all(
             color: isFocused
@@ -350,6 +370,8 @@ class _PhoneInputWithFlagState extends State<_PhoneInputWithFlag> {
             Text(
               '+91',
               style: AppTextStyles.bodyLarge.copyWith(
+                // Field is now the dark card colour, so the theme's light
+                // textPrimary is the readable choice.
                 color: context.colors.textPrimary,
                 fontWeight: FontWeight.w700,
               ),
@@ -375,6 +397,7 @@ class _PhoneInputWithFlagState extends State<_PhoneInputWithFlag> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
+                  // Light text on the dark card — matches the other fields.
                   color: context.colors.textPrimary,
                   letterSpacing: 0.5,
                 ),

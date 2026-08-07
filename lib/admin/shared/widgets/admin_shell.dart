@@ -143,7 +143,7 @@ class _SideRail extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'NammaSign',
+                      'Reset95',
                       style: AdminText.h1.copyWith(fontSize: 18),
                     ),
                     Text(

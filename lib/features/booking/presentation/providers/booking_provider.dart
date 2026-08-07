@@ -46,7 +46,41 @@ class BookingNotifier extends Notifier<BookingDraft> {
   void setPurpose(String v) => state = state.copyWith(purpose: v);
 
   void setCreative(PickedFile file, {required bool isVideo}) {
-    state = state.copyWith(creativeFile: file, creativeIsVideo: isVideo);
+    state = state.copyWith(
+      creativeFile: file,
+      creativeIsVideo: isVideo,
+      creativeImages: const <PickedFile>[],
+    );
+  }
+
+  /// Up to 5 photos for the creative. The first is kept as the primary
+  /// creative (preview + what the board plays).
+  void setCreativeImages(List<PickedFile> files) {
+    final capped = files.take(5).toList();
+    if (capped.isEmpty) {
+      clearCreative();
+      return;
+    }
+    state = state.copyWith(
+      creativeImages: capped,
+      creativeFile: capped.first,
+      creativeIsVideo: false,
+    );
+  }
+
+  void removeCreativeImageAt(int index) {
+    final list = [...state.creativeImages];
+    if (index < 0 || index >= list.length) return;
+    list.removeAt(index);
+    if (list.isEmpty) {
+      clearCreative();
+    } else {
+      state = state.copyWith(
+        creativeImages: list,
+        creativeFile: list.first,
+        creativeIsVideo: false,
+      );
+    }
   }
 
   void clearCreative() {
@@ -90,19 +124,32 @@ class BookingNotifier extends Notifier<BookingDraft> {
       Duration(days: draft.durationDays ?? 1),
     );
 
-    // Upload creative to Storage if present.
-    String? creativeUrl;
-    if (draft.creativeFile != null) {
-      final storage = ref.read(firebaseStorageProvider);
-      final ext = draft.creativeIsVideo ? 'mp4' : 'jpg';
+    // Upload creative(s) to Storage. A video is one file; photos can be up
+    // to 5 — all uploaded, first kept as the primary creative the board plays.
+    final storage = ref.read(firebaseStorageProvider);
+    Future<String> uploadOne(PickedFile f, String ext, int i) async {
       final ref0 = storage
           .ref()
           .child('bookings')
           .child(user.id)
-          .child(
-              '${DateTime.now().millisecondsSinceEpoch}.$ext');
-      final task = await ref0.putFile(File(draft.creativeFile!.path));
-      creativeUrl = await task.ref.getDownloadURL();
+          .child('${DateTime.now().millisecondsSinceEpoch}_$i.$ext');
+      final task = await ref0.putFile(File(f.path));
+      return task.ref.getDownloadURL();
+    }
+
+    String? creativeUrl;
+    final creativeUrls = <String>[];
+    if (draft.creativeIsVideo && draft.creativeFile != null) {
+      creativeUrl = await uploadOne(draft.creativeFile!, 'mp4', 0);
+      creativeUrls.add(creativeUrl);
+    } else if (draft.creativeImages.isNotEmpty) {
+      for (var i = 0; i < draft.creativeImages.length; i++) {
+        creativeUrls.add(await uploadOne(draft.creativeImages[i], 'jpg', i));
+      }
+      creativeUrl = creativeUrls.first;
+    } else if (draft.creativeFile != null) {
+      creativeUrl = await uploadOne(draft.creativeFile!, 'jpg', 0);
+      creativeUrls.add(creativeUrl);
     }
 
     final title = (draft.campaignTitle?.isNotEmpty ?? false)
@@ -126,6 +173,7 @@ class BookingNotifier extends Notifier<BookingDraft> {
       status: BookingStatus.pending,
       description: draft.description ?? draft.purpose,
       creativeUrl: creativeUrl,
+      creativeUrls: creativeUrls,
       creativeIsVideo: draft.creativeIsVideo,
       createdAt: now,
       scheduledStartAt: tomorrow,

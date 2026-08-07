@@ -9,7 +9,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/brand_logo.dart';
 import '../providers/splash_provider.dart';
 
-/// Branded splash screen for NammaSign.
+/// Branded splash screen for Reset95.
 ///
 /// Shows the logo lockup centered on the purple radial gradient for
 /// [AppConstants.splashDuration] (3s), then flips [splashCompleteProvider]
@@ -81,23 +81,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
               // Logo lockup — rendered inside a white tile so the dark
               // monogram stays readable on the purple gradient. The lockup
-              // includes "NAMMASIGN" + "AD-TECH MARKETPLACE" baked in.
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.splashEdge.withValues(alpha: 0.35),
-                      blurRadius: 28,
-                      offset: const Offset(0, 14),
+              // includes "RESET95" + "AD-TECH MARKETPLACE" baked in.
+              Center(
+                child: Container(
+                  // Outer violet frame — offset from the white card so the
+                  // purple background shows through the gap between them.
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.primary, width: 2.5),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.radiusXl + AppSpacing.lg,
                     ),
-                  ],
-                ),
-                child: const BrandLogo(
-                  variant: LogoVariant.lockup,
-                  height: 170,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.xxxl),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.splashEdge.withValues(alpha: 0.35),
+                          blurRadius: 28,
+                          offset: const Offset(0, 14),
+                        ),
+                      ],
+                    ),
+                    child: const BrandLogo(
+                      variant: LogoVariant.lockup,
+                      height: 120,
+                    ),
+                  ),
                 ),
               ),
 

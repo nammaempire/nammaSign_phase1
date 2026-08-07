@@ -14,11 +14,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "1075476022217-eectfa63kofu0jfvdf25le2t8fehe13u.apps.googleusercontent.com",
+          "client_id": "1075476022217-7r9c5gi5pf1a1uho86fl9tsijvlh4qqm.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.nammasign_phase1",
-            "certificate_hash": "bbaa98aaeb26d72ebafab6391aeb22690b913526"
+            "certificate_hash": "39cebc97ed3a0ccdf21e48c2d3d16c13bbb26b9e"
+          }
+        },
+        {
+          "client_id": "1075476022217-kbda1afshk0141pqtdq61h5bl5h5bf6m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nammasign_phase1",
+            "certificate_hash": "19b3b74a4411e054c60b759e1561f9527a12392b"
           }
         },
         {
@@ -57,6 +65,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "1075476022217-3hubg74ctevhr91nteseqmiaahmi0i1f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nammaempire.nammasign",
+            "certificate_hash": "19b3b74a4411e054c60b759e1561f9527a12392b"
+          }
+        },
+        {
+          "client_id": "1075476022217-m1e9m54jk0088uc6qbe2bgm2c9ghlvr7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nammaempire.nammasign",
+            "certificate_hash": "39cebc97ed3a0ccdf21e48c2d3d16c13bbb26b9e"
+          }
+        },
         {
           "client_id": "1075476022217-5q14jnrjnhul2gbc9g7102nnnknst85h.apps.googleusercontent.com",
           "client_type": 3

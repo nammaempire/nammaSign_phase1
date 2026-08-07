@@ -130,7 +130,7 @@ class _Body extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Questions about this page? Email nammaempire@gmail.com.',
+                  'Questions about this page? Email reset95@gmail.com.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: context.colors.textSecondary,
                     height: 1.4,
@@ -224,7 +224,7 @@ class _NotYetPublished extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               'If you need a copy in the meantime, email us at '
-              'nammaempire@gmail.com.',
+              'reset95@gmail.com.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: context.colors.textSecondary,

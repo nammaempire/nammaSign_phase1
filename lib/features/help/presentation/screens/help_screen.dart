@@ -12,7 +12,7 @@ import '../../../../app/theme/app_palette.dart';
 
 /// Support email shown at the bottom of the FAQs screen. Edit here when
 /// you switch to a real support address.
-const String kSupportEmail = 'nammaempire@gmail.com';
+const String kSupportEmail = 'reset95@gmail.com';
 
 class HelpScreen extends ConsumerStatefulWidget {
   const HelpScreen({super.key});

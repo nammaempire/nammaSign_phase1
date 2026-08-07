@@ -115,6 +115,7 @@ class Booking {
     required this.status,
     this.description,
     this.creativeUrl,
+    this.creativeUrls = const [],
     this.creativeIsVideo = false,
     this.adminNote,
     this.adminRuleCode,
@@ -148,6 +149,7 @@ class Booking {
   final BookingStatus status;
   final String? description;
   final String? creativeUrl;
+  final List<String> creativeUrls;
   final bool creativeIsVideo;
   final String? adminNote;
   final String? adminRuleCode;
@@ -189,6 +191,10 @@ class Booking {
       status: BookingStatusX.fromStorage(d['status'] as String?),
       description: d['description'] as String?,
       creativeUrl: creative['url'] as String?,
+      creativeUrls: (creative['urls'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
       creativeIsVideo: (creative['type'] as String?) == 'video',
       adminNote: review['reason'] as String?,
       adminRuleCode: review['ruleCode'] as String?,
@@ -216,6 +222,7 @@ class Booking {
         'creative': {
           'url': creativeUrl,
           'type': creativeIsVideo ? 'video' : 'image',
+          'urls': creativeUrls,
         },
         'pricing': {
           'total': amount,

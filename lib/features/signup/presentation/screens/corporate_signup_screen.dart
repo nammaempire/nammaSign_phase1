@@ -9,6 +9,7 @@ import '../../../../core/analytics/analytics_service.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/uploads/upload_limits.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/file_upload_slot.dart';
 import '../../../../core/widgets/picked_file.dart';
 import '../../../../core/widgets/labeled_form_field.dart';
@@ -17,6 +18,7 @@ import '../../../../core/widgets/uploaded_file_card.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../user/domain/user_profile.dart';
 import '../../../user/presentation/providers/user_profile_provider.dart';
+import '../../../../shared/providers/firebase_providers.dart';
 import '../widgets/signup_scaffold.dart';
 
 /// "Tell us about your company." — corporate account signup form.
@@ -34,16 +36,26 @@ class CorporateSignupScreen extends ConsumerStatefulWidget {
 class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
   final _company = TextEditingController();
   final _pan = TextEditingController();
+  final _gstin = TextEditingController();
   final _email = TextEditingController();
   final _phone = TextEditingController();
 
   PickedFile? _panCinFile;
   PickedFile? _additionalFile;
 
+  // Uppercases input as the user types (PAN/GSTIN are stored upper-case).
+  static final _upperCase = TextInputFormatter.withFunction(
+    (oldValue, newValue) => TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    ),
+  );
+
   @override
   void dispose() {
     _company.dispose();
     _pan.dispose();
+    _gstin.dispose();
     _email.dispose();
     _phone.dispose();
     super.dispose();
@@ -98,13 +110,29 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
       context.showErrorSnack('Enter your company name to continue');
       return;
     }
+    // Format-check the Company PAN and GSTIN before saving (shape + checksum
+    // only — real authenticity is verified server-side by the Cloud Function).
+    final panError = Validators.pan(_pan.text, corporate: true);
+    if (panError != null) {
+      context.showErrorSnack(panError);
+      return;
+    }
+    final gstinError =
+        Validators.gstin(_gstin.text, expectedPan: _pan.text.trim());
+    if (gstinError != null) {
+      context.showErrorSnack(gstinError);
+      return;
+    }
+    final pan = _pan.text.trim().toUpperCase();
+    final gstin = _gstin.text.trim().toUpperCase();
     try {
       final repo = ref.read(userProfileRepositoryProvider);
       await repo.saveCorporate(
         user.id,
         CorporateProfile(
           name: _company.text.trim(),
-          panCin: _pan.text.trim(),
+          panCin: pan,
+          gstin: gstin,
           officialEmail: _email.text.trim(),
           // Manager name isn't collected on this form (only the
           // phone is). Default to empty; user can edit via the
@@ -140,6 +168,17 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
             .read(analyticsServiceProvider)
             .kycUploaded(docKind: 'corporate_additional');
       }
+      // Kick off server-side GSTIN + PAN verification. Best-effort: the
+      // Cloud Function is inert (returns "not configured") until a KYC
+      // provider key is set, so this never blocks signup.
+      try {
+        await ref
+            .read(cloudFunctionsProvider)
+            .httpsCallable('verifyCorporateKyc')
+            .call<Map<String, dynamic>>({'gstin': gstin, 'pan': pan});
+      } catch (e, st) {
+        appLogger.w('Corporate KYC verify failed', error: e, stackTrace: st);
+      }
       if (!mounted) return;
       // Router redirect sees isSetupComplete=true and bounces to /home.
       context.go(AppRoutes.home);
@@ -169,20 +208,30 @@ class _CorporateSignupScreenState extends ConsumerState<CorporateSignupScreen> {
           const SizedBox(height: AppSpacing.xl),
 
           LabeledFormField(
-            label: 'PAN / CIN NUMBER',
+            label: 'COMPANY PAN',
             child: OutlinedInput(
               controller: _pan,
-              hint: 'L85110KA1995PLC019126',
+              hint: 'AAACX1234C',
               monospace: true,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
-                LengthLimitingTextInputFormatter(21),
-                TextInputFormatter.withFunction(
-                  (oldValue, newValue) => TextEditingValue(
-                    text: newValue.text.toUpperCase(),
-                    selection: newValue.selection,
-                  ),
-                ),
+                LengthLimitingTextInputFormatter(10),
+                _upperCase,
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+
+          LabeledFormField(
+            label: 'GSTIN',
+            child: OutlinedInput(
+              controller: _gstin,
+              hint: '27AAACX1234C1Z5',
+              monospace: true,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                LengthLimitingTextInputFormatter(15),
+                _upperCase,
               ],
             ),
           ),

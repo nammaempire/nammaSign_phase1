@@ -9,7 +9,11 @@ import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
 import '../../../account_type/domain/account_type.dart';
 import '../../../home/domain/billboard_listing.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../providers/booking_provider.dart';
+import '../widgets/company_details_sheet.dart';
 import '../widgets/booking_top_bar.dart';
 import '../widgets/selected_board_card.dart';
 import '../../../../app/theme/app_palette.dart';
@@ -41,13 +45,43 @@ class _BookingAccountTypeScreenState
     });
   }
 
-  void _onContinue() {
-    final type = ref.read(bookingProvider).bookingType ?? AccountType.corporate;
-    context.push(
-      type == AccountType.corporate
-          ? '${AppRoutes.bookingCorporate}?listingId=${widget.listing.id}'
-          : '${AppRoutes.bookingIndividual}?listingId=${widget.listing.id}',
+  Future<void> _onContinue() async {
+    final selected =
+        ref.read(bookingProvider).bookingType ?? AccountType.corporate;
+    final listingId = widget.listing.id;
+
+    // Individual booking is always allowed with no extra questions —
+    // including for corporate-enrolled customers.
+    if (selected == AccountType.individual) {
+      context.push('${AppRoutes.bookingIndividual}?listingId=$listingId');
+      return;
+    }
+
+    // Corporate booking. Corporate-enrolled users (or anyone who has already
+    // supplied company details) pass straight through.
+    final profile = ref.read(userProfileProvider).valueOrNull;
+    final hasCompanyDetails = profile?.corporate?.name.isNotEmpty ?? false;
+    final isCorporateAccount = profile?.accountType == AccountType.corporate;
+    if (isCorporateAccount || hasCompanyDetails) {
+      context.push('${AppRoutes.bookingCorporate}?listingId=$listingId');
+      return;
+    }
+
+    // Individual customer going corporate -> collect company name, GSTIN, etc.
+    final user = ref.read(currentUserProvider);
+    if (user == null) return;
+    final saved = await CompanyDetailsSheet.show(
+      context,
+      managerName: profile?.individual?.fullName ?? profile?.displayName ?? '',
+      managerPhone: profile?.individual?.mobile ?? profile?.phone ?? '',
+      initialEmail: profile?.email ?? '',
+      onSubmit: (data) => ref
+          .read(userProfileRepositoryProvider)
+          .saveCorporateOrg(user.id, data),
     );
+    if (saved == true && mounted) {
+      context.push('${AppRoutes.bookingCorporate}?listingId=$listingId');
+    }
   }
 
   @override

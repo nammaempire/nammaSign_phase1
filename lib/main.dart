@@ -27,7 +27,7 @@ Future<void> _onBackgroundMessage(RemoteMessage message) async {
   }
 }
 
-Future<void> main() async {
+ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Lock to portrait — change here if landscape support is needed.
@@ -99,7 +99,7 @@ class _FirebaseInitErrorApp extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'NammaSign could not reach its servers. Check your internet '
+                  'Reset95 could not reach its servers. Check your internet '
                   'connection and reopen the app.',
                   textAlign: TextAlign.center,
                   style: TextStyle(

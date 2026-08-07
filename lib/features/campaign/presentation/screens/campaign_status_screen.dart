@@ -34,6 +34,22 @@ class CampaignStatusScreen extends ConsumerWidget {
 
     final bookingAsync = ref.watch(bookingByIdProvider(bookingId));
 
+    // When the admin rejects the campaign (the uploaded image/video isn't
+    // allowed), show the user a snackbar explaining why. Fires once, on the
+    // transition into the rejected state — including when the screen first
+    // loads an already-rejected booking.
+    ref.listen(bookingByIdProvider(bookingId), (prev, next) {
+      final wasRejected =
+          prev?.valueOrNull?.status == BookingStatus.rejected;
+      final isRejected = next.valueOrNull?.status == BookingStatus.rejected;
+      if (isRejected && !wasRejected) {
+        context.showErrorSnack(
+          "Your creative wasn't approved — the image or video didn't meet "
+          'our content terms and policy. Please edit it and resubmit.',
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: context.colors.bg,
       body: SafeArea(
@@ -471,7 +487,7 @@ class _NeedsChangesBody extends StatelessWidget {
         'Creative exceeds the 30% text rule for outdoor LED. '
             'The body copy is too dense to read from 50m+ at vehicle speeds. '
             "We're unable to approve this submission.";
-    final reviewer = booking.adminReviewerName ?? 'NammaSign Team';
+    final reviewer = booking.adminReviewerName ?? 'Reset95 Team';
     final ruleCode = booking.adminRuleCode;
 
     return SingleChildScrollView(
@@ -854,12 +870,12 @@ class _BookingActionsRow extends ConsumerWidget {
     try {
       final bytes = await InvoiceBuilder.build(data);
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/NammaSign_invoice_$orderRef.pdf');
+      final file = File('${dir.path}/Reset95_invoice_$orderRef.pdf');
       await file.writeAsBytes(bytes, flush: true);
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'application/pdf')],
-        subject: 'NammaSign invoice — $orderRef',
-        text: 'Tax invoice for your NammaSign booking $orderRef.',
+        subject: 'Reset95 invoice — $orderRef',
+        text: 'Tax invoice for your Reset95 booking $orderRef.',
       );
       await ref.read(analyticsServiceProvider).invoiceDownloaded();
     } catch (e) {
@@ -873,7 +889,7 @@ class _BookingActionsRow extends ConsumerWidget {
   Future<void> _shareBooking(BuildContext context, WidgetRef ref) async {
     final orderRef = 'NE-2026-A${(booking.amount * 7 % 9000 + 1000)}';
     final lines = <String>[
-      'NammaSign booking ${booking.status.label}',
+      'Reset95 booking ${booking.status.label}',
       '',
       'Order ref: $orderRef',
       if (booking.campaignTitle.isNotEmpty)
@@ -883,12 +899,12 @@ class _BookingActionsRow extends ConsumerWidget {
           '${booking.durationDays == 1 ? '' : 's'}',
       'Total: Rs ${booking.amount} (incl. 18% GST)',
       '',
-      'Track it in the NammaSign app — History tab.',
+      'Track it in the Reset95 app — History tab.',
     ];
     try {
       await Share.share(
         lines.join('\n'),
-        subject: 'NammaSign booking — $orderRef',
+        subject: 'Reset95 booking — $orderRef',
       );
       await ref.read(analyticsServiceProvider).appBookingShared();
     } catch (e) {
