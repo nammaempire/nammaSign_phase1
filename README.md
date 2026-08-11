@@ -1,8 +1,8 @@
-# NammaSign - Mobile App (Phase 1)
+# Reset95 - Mobile App (Phase 1)
 
 Flutter app on a clean feature-first architecture with Riverpod state management.
 
-**Currently in Phase 1a — UI only.** Auth runs against an in-memory fake repository (any 6-digit OTP is accepted). Firebase + Firestore + Storage land in Phase 1b once the UI is complete.
+Reset95 is a Flutter + Firebase ad-tech marketplace for booking LED billboard ad slots. It runs on real Firebase Auth (phone OTP), Cloud Firestore, Storage, Cloud Functions, FCM, plus Crashlytics and Analytics.
 
 ## Quick start
 

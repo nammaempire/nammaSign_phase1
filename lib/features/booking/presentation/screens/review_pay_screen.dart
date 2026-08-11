@@ -7,6 +7,8 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../user/presentation/providers/user_profile_provider.dart';
+import '../../data/razorpay_service.dart';
 import '../../domain/booking_totals.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/booking_top_bar.dart';
@@ -14,12 +16,12 @@ import '../widgets/order_summary_card.dart';
 import '../widgets/payment_method_card.dart';
 import '../../../../app/theme/app_palette.dart';
 
-/// Step 3 — order summary + payment method selection.
+/// Step 3 — order summary + payment.
 ///
-/// Tap "Pay" → success page.
-/// Long-press "Pay" → failure page (demo affordance so both screens are
-/// reachable without backend integration; in Phase 1b real Razorpay status
-/// determines branch).
+/// Tapping "Pay" creates the booking as `pending_payment`, opens the
+/// Razorpay Checkout sheet, and — once the payment is verified server-side —
+/// routes to the success page. A failed/declined payment routes to the
+/// failure page; the booking stays `pending_payment` so it can be retried.
 class ReviewPayScreen extends ConsumerStatefulWidget {
   const ReviewPayScreen({super.key});
 
@@ -31,6 +33,11 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
   PaymentMethod _method = PaymentMethod.upi;
   bool _processing = false;
 
+  // The booking is created once (as pending_payment). If the first payment
+  // is cancelled/declined and the user taps Pay again, we reuse this id so we
+  // don't create a duplicate booking each retry.
+  String? _bookingId;
+
   @override
   void initState() {
     super.initState();
@@ -38,17 +45,45 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
 
   Future<void> _submit() async {
     setState(() => _processing = true);
-    try {
-      await ref
-          .read(bookingProvider.notifier)
-          .submit(paymentMethod: _method.label);
-      if (!mounted) return;
-      setState(() => _processing = false);
+
+    // Prefill Razorpay Checkout from the signed-in user's profile.
+    final profile = ref.read(userProfileProvider).asData?.value;
+
+    // Create the booking only once; reuse it on retry.
+    if (_bookingId == null) {
+      try {
+        _bookingId = await ref
+            .read(bookingProvider.notifier)
+            .submit(paymentMethod: _method.label);
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _processing = false);
+        context.showErrorSnack('Could not submit booking. Please try again.');
+        return;
+      }
+    }
+
+    final result =
+        await ref.read(razorpayPaymentServiceProvider).payForBooking(
+              bookingId: _bookingId!,
+              displayName: profile?.bestDisplayName,
+              email: profile?.email ?? profile?.corporate?.officialEmail,
+              contact: profile?.phone ?? profile?.individual?.mobile,
+            );
+
+    if (!mounted) return;
+    setState(() => _processing = false);
+
+    if (result.success) {
       context.push(AppRoutes.bookingSuccess);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _processing = false);
-      context.showErrorSnack('Could not submit booking. Please try again.');
+    } else if (result.cancelled) {
+      // User dismissed the sheet — stay on this screen so they can retry.
+      // The booking is saved as "awaiting payment" and also appears in History.
+      context.showSnack(
+        'Payment cancelled. You can pay again — it\'s saved under History.',
+      );
+    } else {
+      context.push(AppRoutes.bookingFailure);
     }
   }
 
@@ -111,8 +146,8 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Verify everything below, then submit your campaign '
-                      'for review. Our team will reach out about payment.',
+                      'Verify everything below, then pay securely to send '
+                      'your campaign for review.',
                       style: AppTextStyles.bodyLarge.copyWith(
                         color: context.colors.textSecondary,
                       ),
@@ -203,7 +238,7 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Submit for review',
+                                'Pay ₹${formatRupees(totals.total)}',
                                 style: AppTextStyles.labelLarge.copyWith(
                                   color: AppColors.textPrimary,
                                   fontSize: 17,
@@ -211,8 +246,8 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                               ),
                               const SizedBox(width: AppSpacing.sm),
                               const Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 18,
+                                Icons.lock_rounded,
+                                size: 17,
                                 color: AppColors.textPrimary,
                               ),
                             ],
@@ -226,13 +261,13 @@ class _ReviewPayScreenState extends ConsumerState<ReviewPayScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.lock_outline_rounded,
+                    Icons.verified_user_outlined,
                     size: 11,
                     color: context.colors.textTertiary,
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '256-bit encryption  ·  Powered by Razorpay',
+                    'Secured by Razorpay  ·  UPI, cards & netbanking',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: context.colors.textTertiary,
                     ),

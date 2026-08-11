@@ -88,7 +88,7 @@ android {
         // Firebase (google-services.json). Permanent once shipped.
         applicationId = "com.nammaempire.nammasign"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 35 // Play Store minimum (explicit for production)
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -118,19 +118,19 @@ android {
             } else {
                 null
             }
-            // R8 code shrinking + obfuscation is temporarily DISABLED: with it
-            // on, the release build crashed on launch ("keeps stopping"), which
-            // means a keep rule is missing for some dependency. Ship working
-            // first; re-enable below once the missing rule is identified from a
-            // release logcat and added to proguard-rules.pro, then smoke-tested.
-            //   isMinifyEnabled = true
-            //   isShrinkResources = true
-            //   proguardFiles(
-            //       getDefaultProguardFile("proguard-android-optimize.txt"),
-            //       "proguard-rules.pro",
-            //   )
+            // R8 code shrinking + obfuscation — TEMPORARILY DISABLED.
+            // The shrunk release build was crashing on launch ("Reset95 keeps
+            // stopping"), i.e. R8 stripped a class needed at runtime. Disabled
+            // to restore a working release build. Re-enable once a crash
+            // logcat pinpoints the stripped class so we can add the exact keep
+            // rule in proguard-rules.pro (keep rules for Firebase, Crashlytics,
+            // Flutter, Play Core / Play Integrity, ExoPlayer are already there).
             isMinifyEnabled = false
             isShrinkResources = false
+            // proguardFiles(
+            //     getDefaultProguardFile("proguard-android-optimize.txt"),
+            //     "proguard-rules.pro",
+            // )
         }
     }
 }
