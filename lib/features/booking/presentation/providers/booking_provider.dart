@@ -101,8 +101,9 @@ class BookingNotifier extends Notifier<BookingDraft> {
   /// Persists the draft to Firestore + uploads the creative to Storage.
   /// Returns the new bookingId. Throws on any failure.
   ///
-  /// Phase 1b note: skips Razorpay. Booking lands as `pending_review`
-  /// so admin can approve manually. Razorpay integration in Phase 1c.
+  /// Payment-first: the booking is created as `pending_payment`. The caller
+  /// then runs Razorpay Checkout; the verifyRazorpayPayment Cloud Function
+  /// flips it to paid + `pending_review` once the signature is verified.
   Future<String> submit({String paymentMethod = 'UPI'}) async {
     final draft = state;
     final listing = draft.listing;
@@ -168,9 +169,10 @@ class BookingNotifier extends Notifier<BookingDraft> {
       amount: totals.total,
       paymentMethod: paymentMethod,
       paid: false,
-      // Payment is handled offline for now — booking goes straight to the
-      // admin review queue. (In-app payment deferred.)
-      status: BookingStatus.pending,
+      // Payment-first: starts as pending_payment. Razorpay Checkout runs
+      // next; the verify Cloud Function flips it to paid + pending_review
+      // once the signature checks out server-side.
+      status: BookingStatus.pendingPayment,
       description: draft.description ?? draft.purpose,
       creativeUrl: creativeUrl,
       creativeUrls: creativeUrls,

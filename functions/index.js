@@ -15,7 +15,9 @@
 
 const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { defineSecret } = require("firebase-functions/params");
+const crypto = require("crypto");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -525,4 +527,303 @@ exports.verifyCorporateKyc = onCall(
       active: active,
     };
   }
+);
+
+// =============================================================================
+// RAZORPAY PAYMENTS
+// =============================================================================
+//
+// Flow (payment-first):
+//   1. App creates the booking as `pending_payment` (paid:false).
+//   2. App calls createRazorpayOrder({bookingId}) — this reads the amount
+//      from the booking doc SERVER-SIDE (so the client can't tamper it),
+//      creates a Razorpay order, stashes the orderId on the booking, and
+//      returns { orderId, amount, currency, keyId } to open Checkout.
+//   3. User pays in the Razorpay Checkout sheet (razorpay_flutter).
+//   4. App calls verifyRazorpayPayment({...}) — the HMAC signature is
+//      verified with the key secret. On success the booking flips to
+//      paid:true / pending_review and a payments/{paymentId} doc is
+//      written. That paid-flip re-triggers onBookingStatusChange, which
+//      sends the "Payment received" push.
+//   5. razorpayWebhook is the server-authoritative safety net: if the app
+//      is killed before step 4, Razorpay's payment.captured webhook marks
+//      the booking paid anyway. Both paths are idempotent.
+//
+// SETUP (see RAZORPAY_SETUP.md):
+//   • functions/.env         → RAZORPAY_KEY_ID=rzp_live_or_test_xxx
+//   • firebase secret        → RAZORPAY_KEY_SECRET
+//   • firebase secret        → RAZORPAY_WEBHOOK_SECRET (from the webhook you
+//                              create in the Razorpay dashboard)
+
+const RAZORPAY_KEY_SECRET = defineSecret("RAZORPAY_KEY_SECRET");
+const RAZORPAY_WEBHOOK_SECRET = defineSecret("RAZORPAY_WEBHOOK_SECRET");
+
+// The key *id* is publishable (it ships to the client to open Checkout), so
+// it lives in functions/.env rather than in a secret.
+function razorpayKeyId() {
+  return process.env.RAZORPAY_KEY_ID || "";
+}
+
+const RAZORPAY_API = "https://api.razorpay.com/v1";
+
+/**
+ * Marks a booking paid + moves it into the admin review queue, and records
+ * the payment. Idempotent: a second call for an already-paid booking is a
+ * no-op. Shared by verifyRazorpayPayment (client) and the webhook (server).
+ */
+async function markBookingPaid(bookingId, payment) {
+  const ref = db.collection("bookings").doc(bookingId);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) {
+      throw new HttpsError("not-found", "Booking not found.");
+    }
+    const data = snap.data() || {};
+    if (data.paid === true) return; // already settled — idempotent
+
+    tx.update(ref, {
+      paid: true,
+      status: "pending_review",
+      "razorpay.orderId": payment.orderId || null,
+      "razorpay.paymentId": payment.paymentId || null,
+      paymentMethod: payment.method || data.paymentMethod || "UPI",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    if (payment.paymentId) {
+      const payRef = db.collection("payments").doc(payment.paymentId);
+      tx.set(
+        payRef,
+        {
+          bookingId: bookingId,
+          userId: data.userId || null,
+          orderId: payment.orderId || null,
+          paymentId: payment.paymentId,
+          amount: (data.pricing && data.pricing.total) || 0,
+          currency: "INR",
+          method: payment.method || data.paymentMethod || "UPI",
+          source: payment.source || "app",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
+  });
+}
+
+/**
+ * createRazorpayOrder({ bookingId }) → { orderId, amount, currency, keyId }.
+ * The amount is read from the booking document, never trusted from the client.
+ */
+exports.createRazorpayOrder = onCall(
+  { region: REGION, secrets: [RAZORPAY_KEY_SECRET] },
+  async (request) => {
+    const uid = request.auth && request.auth.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Sign in required.");
+    }
+    const keyId = razorpayKeyId();
+    const keySecret = RAZORPAY_KEY_SECRET.value();
+    if (!keyId || !keySecret) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Payments are not configured yet. Please try again later.",
+      );
+    }
+
+    const bookingId = String((request.data && request.data.bookingId) || "");
+    if (!bookingId) {
+      throw new HttpsError("invalid-argument", "bookingId is required.");
+    }
+
+    const ref = db.collection("bookings").doc(bookingId);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      throw new HttpsError("not-found", "Booking not found.");
+    }
+    const booking = snap.data() || {};
+    if (booking.userId !== uid) {
+      throw new HttpsError("permission-denied", "Not your booking.");
+    }
+    if (booking.paid === true) {
+      throw new HttpsError("failed-precondition", "Already paid.");
+    }
+
+    // Amount in paise, from the SERVER's copy of the booking total.
+    const rupees = (booking.pricing && booking.pricing.total) || 0;
+    const amountPaise = Math.round(Number(rupees) * 100);
+    if (!Number.isFinite(amountPaise) || amountPaise < 100) {
+      throw new HttpsError("failed-precondition", "Invalid booking amount.");
+    }
+
+    const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+    let order;
+    try {
+      const res = await fetch(`${RAZORPAY_API}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Basic ${auth}`,
+        },
+        body: JSON.stringify({
+          amount: amountPaise,
+          currency: "INR",
+          receipt: bookingId,
+          notes: { bookingId: bookingId, uid: uid },
+        }),
+      });
+      order = await res.json();
+      if (!res.ok || !order || !order.id) {
+        console.error("Razorpay order create failed", order);
+        throw new HttpsError("unavailable", "Could not start payment.");
+      }
+    } catch (e) {
+      if (e instanceof HttpsError) throw e;
+      console.error("Razorpay order create error", e);
+      throw new HttpsError("unavailable", "Could not start payment.");
+    }
+
+    await ref.update({
+      "razorpay.orderId": order.id,
+      status: "pending_payment",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      orderId: order.id,
+      amount: amountPaise,
+      currency: "INR",
+      keyId: keyId,
+    };
+  },
+);
+
+/**
+ * verifyRazorpayPayment({ bookingId, razorpayOrderId, razorpayPaymentId,
+ * razorpaySignature }) → { verified: true }. Verifies the Checkout signature
+ * (HMAC-SHA256 of "orderId|paymentId" with the key secret) before settling.
+ */
+exports.verifyRazorpayPayment = onCall(
+  { region: REGION, secrets: [RAZORPAY_KEY_SECRET] },
+  async (request) => {
+    const uid = request.auth && request.auth.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Sign in required.");
+    }
+    const keySecret = RAZORPAY_KEY_SECRET.value();
+    if (!keySecret) {
+      throw new HttpsError("failed-precondition", "Payments not configured.");
+    }
+
+    const d = request.data || {};
+    const bookingId = String(d.bookingId || "");
+    const orderId = String(d.razorpayOrderId || "");
+    const paymentId = String(d.razorpayPaymentId || "");
+    const signature = String(d.razorpaySignature || "");
+    if (!bookingId || !orderId || !paymentId || !signature) {
+      throw new HttpsError("invalid-argument", "Missing payment fields.");
+    }
+
+    // Ownership check before we trust anything else.
+    const snap = await db.collection("bookings").doc(bookingId).get();
+    if (!snap.exists || (snap.data() || {}).userId !== uid) {
+      throw new HttpsError("permission-denied", "Not your booking.");
+    }
+
+    const expected = crypto
+      .createHmac("sha256", keySecret)
+      .update(`${orderId}|${paymentId}`)
+      .digest("hex");
+    const ok =
+      expected.length === signature.length &&
+      crypto.timingSafeEqual(
+        Buffer.from(expected),
+        Buffer.from(signature),
+      );
+    if (!ok) {
+      throw new HttpsError("permission-denied", "Signature mismatch.");
+    }
+
+    await markBookingPaid(bookingId, {
+      orderId: orderId,
+      paymentId: paymentId,
+      source: "app",
+    });
+
+    return { verified: true };
+  },
+);
+
+/**
+ * Razorpay webhook (server-authoritative). Verifies X-Razorpay-Signature
+ * against the webhook secret, then settles the booking on payment.captured.
+ * Configure the endpoint + secret in the Razorpay dashboard. Always returns
+ * 200 for handled/ignored events so Razorpay doesn't retry needlessly; 4xx
+ * only for a bad signature.
+ */
+exports.razorpayWebhook = onRequest(
+  { region: REGION, secrets: [RAZORPAY_WEBHOOK_SECRET] },
+  async (req, res) => {
+    const secret = RAZORPAY_WEBHOOK_SECRET.value();
+    if (!secret) {
+      console.error("razorpayWebhook: secret not configured");
+      res.status(500).send("not configured");
+      return;
+    }
+    const signature = req.get("X-Razorpay-Signature") || "";
+    const raw = req.rawBody; // Buffer — required for a correct HMAC.
+    const expected = crypto
+      .createHmac("sha256", secret)
+      .update(raw)
+      .digest("hex");
+    const ok =
+      expected.length === signature.length &&
+      crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+    if (!ok) {
+      console.warn("razorpayWebhook: bad signature");
+      res.status(400).send("bad signature");
+      return;
+    }
+
+    let event;
+    try {
+      event = JSON.parse(raw.toString("utf8"));
+    } catch (e) {
+      res.status(400).send("bad body");
+      return;
+    }
+
+    try {
+      if (event.event === "payment.captured" || event.event === "order.paid") {
+        const entity =
+          (event.payload &&
+            event.payload.payment &&
+            event.payload.payment.entity) ||
+          {};
+        const bookingId =
+          (entity.notes && entity.notes.bookingId) ||
+          (event.payload &&
+            event.payload.order &&
+            event.payload.order.entity &&
+            event.payload.order.entity.receipt) ||
+          "";
+        if (bookingId) {
+          await markBookingPaid(bookingId, {
+            orderId: entity.order_id || null,
+            paymentId: entity.id || null,
+            method: entity.method || null,
+            source: "webhook",
+          });
+        } else {
+          console.warn("razorpayWebhook: no bookingId in event");
+        }
+      }
+    } catch (e) {
+      console.error("razorpayWebhook: handler error", e);
+      // Fall through to 200 so Razorpay doesn't hammer retries; the
+      // client-side verify + next webhook delivery still cover us.
+    }
+
+    res.status(200).send("ok");
+  },
 );

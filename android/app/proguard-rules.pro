@@ -1,4 +1,4 @@
-# ProGuard / R8 keep rules for NammaSign release builds.
+# ProGuard / R8 keep rules for Reset95 release builds.
 #
 # The app (de)serializes Firestore data through generated json_serializable /
 # freezed code (compile-time, no reflection), so R8 is safe. These rules are
@@ -37,3 +37,57 @@
 # Annotations, generic signatures and inner-class metadata used by several
 # libraries (gson-style mappers, kotlin reflect, etc.).
 -keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
+
+# =====================================================================
+# Added for production R8 re-enable (Reset95)
+# =====================================================================
+
+# ---- Play Core / deferred components (THE common Flutter R8 crash) ----
+# Flutter's embedding references these split-install classes; without keeps
+# R8 fails with "Missing classes" or the release app crashes on launch.
+-dontwarn com.google.android.play.core.**
+-keep class com.google.android.play.core.** { *; }
+
+# ---- Play Integrity ----
+-dontwarn com.google.android.play.integrity.**
+-keep class com.google.android.play.integrity.** { *; }
+
+# ---- Firebase App Check ----
+-dontwarn com.google.firebase.appcheck.**
+-keep class com.google.firebase.appcheck.** { *; }
+
+# ---- video_player (ExoPlayer / media3) ----
+-dontwarn com.google.android.exoplayer2.**
+-keep class com.google.android.exoplayer2.** { *; }
+-dontwarn androidx.media3.**
+-keep class androidx.media3.** { *; }
+
+# ---- Kotlin runtime / metadata ----
+-dontwarn kotlin.**
+-keep class kotlin.Metadata { *; }
+-keepattributes RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations,AnnotationDefault
+
+# ---- Razorpay (in-app payments) ----
+# The Checkout SDK uses reflection + annotations and ships proguard rules,
+# but keep these explicitly so R8 (when re-enabled) can't strip the entry
+# points or the Google Pay / analytics classes it references optionally.
+-keepclassmembers class * {
+    @proguard.annotation.Keep *;
+}
+-keep class com.razorpay.** { *; }
+-keep interface com.razorpay.** { *; }
+-dontwarn com.razorpay.**
+-optimizations !method/inlining/*
+-keepclasseswithmembers class * {
+    public void onPayment*(...);
+}
+# Razorpay optionally references these — safe to ignore if absent.
+-dontwarn com.google.android.apps.nbu.paisa.inapp.client.api.**
+-dontwarn com.google.android.gms.wallet.**
+
+# ---- Native (JNI) + enums used by plugins ----
+-keepclasseswithmembernames class * { native <methods>; }
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}

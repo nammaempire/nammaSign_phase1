@@ -140,8 +140,8 @@ class _PaymentFailureScreenState
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Insufficient funds in the linked UPI account. '
-                      'No amount was deducted.',
+                      'The payment did not complete. If any amount was '
+                      'deducted it is refunded automatically.',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: const Color(0xFF1A1A22),
                         height: 1.4,
@@ -149,10 +149,9 @@ class _PaymentFailureScreenState
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'CODE: E_INSUFFICIENT_BAL  ·  14:23 IST',
+                      'Your booking is saved under History — retry anytime',
                       style: AppTextStyles.brandFooter.copyWith(
                         color: const Color(0xFF9494A0),
-                        fontFamily: 'monospace',
                         letterSpacing: 1.2,
                       ),
                     ),

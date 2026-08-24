@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reset95 — Android Launch Runbook</title>
+<style>
+  :root{--ink:#1a1a22;--muted:#5e5e68;--line:#e8e6f0;--accent:#7b2fe3;--deep:#4a1a9c;--bg:#faf9fd;--ok:#3b7f2a;--warn:#b7791f;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55}
+  .wrap{max-width:900px;margin:0 auto;padding:40px 22px 90px}
+  header{background:linear-gradient(120deg,var(--accent),var(--deep));color:#fff;border-radius:16px;padding:26px 28px;margin-bottom:26px}
+  header .k{font-weight:800;letter-spacing:.5px;text-transform:uppercase;font-size:13px;opacity:.9}
+  header h1{margin:8px 0 4px;font-size:28px}
+  header p{margin:0;opacity:.92;font-size:15px}
+  .phase{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 2px rgba(20,10,40,.03)}
+  .phase h2{margin:0 0 4px;font-size:19px;display:flex;align-items:center;gap:10px}
+  .num{background:var(--accent);color:#fff;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex:none}
+  .who{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 9px;border-radius:20px;margin-left:auto}
+  .you{background:#fde:;background:#fbeee0;color:var(--warn)}
+  .done{background:#e3f2df;color:var(--ok)}
+  .sub{color:var(--muted);font-size:14px;margin:2px 0 12px}
+  ul.chk{list-style:none;padding:0;margin:0}
+  ul.chk li{position:relative;padding:8px 0 8px 30px;border-top:1px dashed var(--line)}
+  ul.chk li:first-child{border-top:none}
+  ul.chk li:before{content:"";position:absolute;left:0;top:11px;width:17px;height:17px;border:2px solid #c9c2de;border-radius:5px}
+  code{background:#f1edfb;color:var(--deep);padding:1.5px 6px;border-radius:5px;font-size:13px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  pre{background:#1a1430;color:#eae4fb;padding:12px 14px;border-radius:10px;overflow:auto;font-size:13px;margin:8px 0}
+  pre code{background:none;color:inherit;padding:0}
+  .file{display:inline-block;background:#f1edfb;color:var(--deep);border:1px solid #e0d8f5;border-radius:6px;padding:1px 8px;font-size:12.5px;font-weight:600}
+  .tip{background:#fff8e6;border-left:4px solid var(--warn);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14px}
+  .fill{background:#fff7d6;padding:1px 5px;border-radius:4px;font-weight:600}
+  footer{color:var(--muted);font-size:13px;margin-top:26px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="k">Reset95 · Android Production</div>
+  <h1>Launch Runbook</h1>
+  <p>Everything left to get on the Play Store, in order. Files in <span class="file">grey</span> were already delivered to your project.</p>
+</header>
+
+<div class="phase">
+  <h2><span class="num">0</span> Rebuild &amp; verify the app <span class="who done">code done</span></h2>
+  <div class="sub">Pull the new payment package and confirm a clean, non-crashing release build.</div>
+  <ul class="chk">
+    <li>In the project folder, run <code>flutter pub get</code> (pulls <code>razorpay_flutter</code>).</li>
+    <li>Run <code>flutter analyze</code> — should be clean.</li>
+    <li>Build: <code>flutter build apk --release</code> (R8 is off, so no launch crash).</li>
+    <li>Install the APK and confirm it opens to the login screen.</li>
+  </ul>
+  <div class="tip">If the build complains it can't find <code>razorpay_flutter</code>, you skipped <code>flutter pub get</code> — run it and rebuild.</div>
+</div>
+
+<div class="phase">
+  <h2><span class="num">1</span> Turn on real payments (Razorpay) <span class="who you">your action</span></h2>
+  <div class="sub">Full steps are in <span class="file">RAZORPAY_SETUP.md</span>. Summary:</div>
+  <ul class="chk">
+    <li>Create a Razorpay account; start in <strong>Test Mode</strong>.</li>
+    <li>Get your <strong>Key ID</strong> and <strong>Key Secret</strong> (Settings → API Keys).</li>
+    <li>In <code>functions/.env</code> add <code>RAZORPAY_KEY_ID=rzp_test_xxx</code>.</li>
+    <li>Set secrets: <code>firebase functions:secrets:set RAZORPAY_KEY_SECRET</code> and <code>...RAZORPAY_WEBHOOK_SECRET</code>.</li>
+    <li>Deploy: <code>firebase deploy --only functions</code>; note the <code>razorpayWebhook</code> URL.</li>
+    <li>Razorpay dashboard → Webhooks → add that URL + the webhook secret, event <code>payment.captured</code>.</li>
+    <li>Test with <code>success@razorpay</code> (UPI) — confirm the booking flips to paid/pending review.</li>
+    <li>When live: swap in <code>rzp_live_</code> keys, add a live-mode webhook, redeploy.</li>
+  </ul>
+</div>
+
+<div class="phase">
+  <h2><span class="num">2</span> Host the legal pages → get public URLs <span class="who you">your action</span></h2>
+  <div class="sub">Play needs a public Privacy Policy URL and an Account-Deletion URL. Files are in your <span class="file">legal/</span> folder.</div>
+  <ul class="chk">
+    <li>First, fill the <span class="fill">[bracketed]</span> placeholders in all three HTML files (legal entity name, address, refund terms).</li>
+    <li><strong>Easiest host — Firebase Hosting:</strong> put the 3 HTML files in a folder, then:</li>
+  </ul>
+  <pre><code># from a folder containing privacy-policy.html, terms-of-service.html, account-deletion.html
+firebase init hosting     # choose this folder as "public", single-page: No
+firebase deploy --only hosting</code></pre>
+  <ul class="chk">
+    <li>You'll get URLs like <code>https://&lt;your-site&gt;.web.app/privacy-policy.html</code>.</li>
+    <li><em>Alternative:</em> drag the 3 files into a GitHub repo → enable GitHub Pages.</li>
+    <li>Save the Privacy Policy URL and the Account-Deletion URL — you need both in Play Console.</li>
+  </ul>
+  <div class="tip">Keep this separate from your Flutter <code>build/web</code> hosting so app builds don't overwrite the legal pages.</div>
+</div>
+
+<div class="phase">
+  <h2><span class="num">3</span> Create the app in Play Console <span class="who you">your action</span></h2>
+  <ul class="chk">
+    <li>Play Console → Create app → name <strong>Reset95</strong>, Free, App.</li>
+    <li>Set up <strong>Internal testing</strong> track; add your own email as a tester.</li>
+    <li>Build an <strong>AAB</strong>: <code>flutter build appbundle --release</code>, and upload it.</li>
+    <li>Accept <strong>Play App Signing</strong>. Then copy the <strong>App-signing SHA-1 &amp; SHA-256</strong> Google shows you…</li>
+    <li>…and add those SHAs to Firebase (Project settings → your Android app) so OTP works on Play builds. Re-download <code>google-services.json</code> if prompted.</li>
+  </ul>
+  <div class="tip">The OTP "Play Integrity / reCAPTCHA" error clears once the app is installed <em>from the Play internal-testing track</em> with the Play-signing SHAs registered — sideloaded APKs can't satisfy Play Integrity.</div>
+</div>
+
+<div class="phase">
+  <h2><span class="num">4</span> Fill the store listing <span class="who done">content ready</span></h2>
+  <div class="sub">Copy from <span class="file">STORE_LISTING.md</span>; upload the graphics from <span class="file">store_assets/</span>.</div>
+  <ul class="chk">
+    <li>App name, short description, full description → paste from the file.</li>
+    <li>App icon → <span class="file">reset95_store_icon_512.png</span>.</li>
+    <li>Feature graphic → <span class="file">reset95_feature_graphic_1024x500.png</span>.</li>
+    <li>Phone screenshots (min 2) → <strong>send me a few and I'll frame them</strong>, or add your own.</li>
+    <li>Category: Business · Contact email: <code>reset95@gmail.com</code>.</li>
+  </ul>
+</div>
+
+<div class="phase">
+  <h2><span class="num">5</span> App content declarations <span class="who done">answers ready</span></h2>
+  <div class="sub">Use <span class="file">DATA_SAFETY_ANSWERS.md</span> for the Data Safety form.</div>
+  <ul class="chk">
+    <li>Privacy policy URL → your hosted <code>privacy-policy.html</code>.</li>
+    <li>Data safety form → transcribe from the file (note the 2 judgment calls).</li>
+    <li>App access → if login needs an OTP, provide a test phone/number or instructions for the reviewer.</li>
+    <li>Account deletion → tick "yes", paste your hosted <code>account-deletion.html</code> URL.</li>
+    <li>Target audience → <strong>18+</strong>. Ads → declare per your setup. Content rating → complete IARC questionnaire.</li>
+  </ul>
+</div>
+
+<div class="phase">
+  <h2><span class="num">6</span> Firebase App Check (console) <span class="who you">your action</span></h2>
+  <div class="sub">The code is wired (non-enforced). Finish it in the console.</div>
+  <ul class="chk">
+    <li>Firebase → App Check → register the Android app with the <strong>Play Integrity</strong> provider.</li>
+    <li>Add a <strong>debug token</strong> for your dev device (printed in logcat on first run).</li>
+    <li>Watch the metrics for a few days, then turn on <strong>enforcement</strong> — not before, or it breaks live calls.</li>
+  </ul>
+</div>
+
+<div class="phase">
+  <h2><span class="num">7</span> Submit for review <span class="who you">your action</span></h2>
+  <ul class="chk">
+    <li>Roll the build to Internal testing; verify OTP, a real payment, and the booking flow end-to-end.</li>
+    <li>Promote to <strong>Production</strong> (or Closed testing first) and submit for review.</li>
+    <li>Google review typically takes a few days for a new app.</li>
+  </ul>
+</div>
+
+<footer>
+  Reset95 · generated 10 Aug 2026. Grey chips = files already in your project.
+  Ask me to frame screenshots or to expand any step into click-by-click detail.
+</footer>
+</div>
+</body>
+</html>

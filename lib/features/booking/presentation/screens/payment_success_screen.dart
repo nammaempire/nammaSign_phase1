@@ -210,8 +210,8 @@ class _PaymentSuccessScreenState
               const SizedBox(height: AppSpacing.md),
 
               Text(
-                'Your campaign is now in admin review. Our team will reach '
-                'out about payment and confirm it goes live.',
+                'Payment received. Your campaign is now in admin review — '
+                "we'll confirm as soon as it's approved to go live.",
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: const Color(0xFF5E5E68),
@@ -274,7 +274,7 @@ class _PaymentSuccessScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'AMOUNT DUE',
+                              'AMOUNT PAID',
                               style: AppTextStyles.brandFooter.copyWith(
                                 color: const Color(0xFF9494A0),
                                 letterSpacing: 2,

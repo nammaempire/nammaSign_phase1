@@ -1,5 +1,7 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,6 +61,21 @@ Future<void> _onBackgroundMessage(RemoteMessage message) async {
     appLogger.e('Firebase init failed', error: e, stackTrace: st);
     runApp(const _FirebaseInitErrorApp());
     return;
+  }
+
+  // Firebase App Check — anti-abuse for Firestore / Storage / Functions.
+  // Debug provider on debug builds (register the token printed in logcat
+  // in Firebase Console → App Check); Play Integrity on release. Stays
+  // NON-enforced until enforcement is toggled on in the console.
+  try {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider:
+          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      appleProvider:
+          kDebugMode ? AppleProvider.debug : AppleProvider.appAttest,
+    );
+  } catch (e, st) {
+    appLogger.w('App Check activate failed', error: e, stackTrace: st);
   }
 
   // Register the FCM background handler BEFORE the app starts so a push

@@ -9,7 +9,6 @@ import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/widgets/gradient_border_box.dart';
 import '../../../account_type/domain/account_type.dart';
 import '../../../home/domain/billboard_listing.dart';
-import '../../../../core/extensions/context_extensions.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../user/presentation/providers/user_profile_provider.dart';
 import '../providers/booking_provider.dart';
