@@ -1,3 +1,4 @@
+import '../../../../core/constants/ui_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/providers/firebase_providers.dart';
@@ -13,7 +14,9 @@ import '../../domain/repositories/auth_repository.dart';
 /// Production / staging builds must keep this false. We leave the toggle
 /// in place so widget tests + early UI iteration don't require Firebase
 /// to be initialised.
-const bool _useFakeAuth = false;
+// (false unless the app is started with --dart-define=UI_PREVIEW=true —
+// see core/constants/ui_preview.dart.)
+const bool _useFakeAuth = kUiPreview;
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   if (_useFakeAuth) {

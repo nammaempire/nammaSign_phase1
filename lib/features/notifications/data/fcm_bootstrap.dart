@@ -37,6 +37,11 @@ class FcmBootstrap {
     if (_initialized) return;
     _initialized = true;
 
+    // Web: push is not set up (it needs a service worker + web push key and
+    // would show a browser permission prompt on page load). The in-app
+    // notifications bell reads Firestore and works without it.
+    if (kIsWeb) return;
+
     final messaging = _ref.read(firebaseMessagingProvider);
 
     // 1. Permission. On Android 12 and below this returns authorized

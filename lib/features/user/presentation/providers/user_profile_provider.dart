@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/ui_preview.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/repositories/user_profile_repository.dart';
@@ -17,6 +18,7 @@ final userProfileRepositoryProvider = Provider<UserProfileRepository>((ref) {
 final userProfileProvider = StreamProvider<UserProfile?>((ref) {
   final user = ref.watch(currentUserProvider);
   if (user == null) return Stream.value(null);
+  if (kUiPreview) return Stream.value(kPreviewProfile); // UI preview only
   return ref.watch(userProfileRepositoryProvider).watch(user.id);
 });
 

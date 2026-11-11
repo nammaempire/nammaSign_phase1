@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import '../../../../core/utils/logger.dart';
 import '../../../../shared/providers/firebase_providers.dart';
+import 'razorpay_web_checkout_stub.dart'
+    if (dart.library.js_interop) 'razorpay_web_checkout_web.dart';
 
 /// Outcome of a checkout attempt. [success] means the payment was made AND
 /// verified server-side; the booking is now paid + in admin review.
@@ -129,6 +132,19 @@ class RazorpayPaymentService {
     String? email,
     String? contact,
   }) {
+    // Web: the razorpay_flutter plugin is Android / iOS only, so the
+    // browser uses Razorpay's standard checkout.js with the same order.
+    if (kIsWeb) {
+      return _openWebCheckout(
+        keyId: keyId,
+        orderId: orderId,
+        amount: amount,
+        currency: currency,
+        email: email,
+        contact: contact,
+      );
+    }
+
     final completer = Completer<_CheckoutOutcome>();
     final razorpay = Razorpay();
 
@@ -190,9 +206,51 @@ class RazorpayPaymentService {
       );
     });
   }
+
+  Future<_CheckoutOutcome> _openWebCheckout({
+    required String keyId,
+    required String orderId,
+    required int amount,
+    required String currency,
+    String? email,
+    String? contact,
+  }) async {
+    final prefill = <String, dynamic>{
+      if (contact != null && contact.trim().isNotEmpty) 'contact': contact.trim(),
+      if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+    };
+    final Map<String, Object?> result;
+    try {
+      result = await openRazorpayWebCheckout(<String, dynamic>{
+        'key': keyId,
+        'order_id': orderId,
+        'amount': amount,
+        'currency': currency,
+        'name': 'Reset95',
+        'description': 'Ad campaign booking',
+        'theme': {'color': '#7B2FE3'},
+        if (prefill.isNotEmpty) 'prefill': prefill,
+      });
+    } catch (e, st) {
+      appLogger.e('Web checkout failed', error: e, stackTrace: st);
+      return const _CheckoutOutcome.error(0, 'Could not open payment.');
+    }
+    switch (result['status']) {
+      case 'success':
+        return _CheckoutOutcome.success(
+          paymentId: (result['paymentId'] as String?) ?? '',
+          orderId: (result['orderId'] as String?) ?? orderId,
+          signature: (result['signature'] as String?) ?? '',
+        );
+      case 'cancelled':
+        return const _CheckoutOutcome.cancelled();
+      default:
+        return _CheckoutOutcome.error(0, result['message'] as String?);
+    }
+  }
 }
 
-/// Internal result of the native Checkout sheet (before server verification).
+/// Internal result of the Checkout sheet (before server verification).
 class _CheckoutOutcome {
   const _CheckoutOutcome._({
     required this.isSuccess,

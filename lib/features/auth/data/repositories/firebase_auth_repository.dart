@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -46,6 +47,21 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<String> sendOtp(String phoneNumber) async {
+    // Web: `verifyPhoneNumber` is mobile-only. The browser flow is
+    // `signInWithPhoneNumber`, which runs an invisible reCAPTCHA and
+    // returns a verificationId that `verifyOtp` below uses unchanged.
+    if (kIsWeb) {
+      try {
+        final confirmation = await _auth.signInWithPhoneNumber(phoneNumber);
+        return confirmation.verificationId;
+      } on fb.FirebaseAuthException catch (e) {
+        throw AuthException(_humanizeAuthError(e), code: e.code);
+      } catch (e, st) {
+        appLogger.e('sendOtp (web) failed', error: e, stackTrace: st);
+        throw const AuthException('Could not send OTP. Try again.');
+      }
+    }
+
     final completer = Completer<String>();
     try {
       await _auth.verifyPhoneNumber(
@@ -154,6 +170,21 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<AppUser> signInWithGoogle() async {
     try {
+      // Web: use Firebase's own Google popup — the google_sign_in plugin
+      // needs a separate web client-id setup that we don't require.
+      if (kIsWeb) {
+        final result = await _auth.signInWithPopup(fb.GoogleAuthProvider());
+        final user = result.user;
+        if (user == null) {
+          throw const AuthException(
+            'Google sign-in succeeded but user is null',
+          );
+        }
+        final model = UserModel.fromFirebaseUser(user);
+        await _ensureUserDocument(model);
+        return model;
+      }
+
       final googleSignIn = GoogleSignIn();
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
@@ -194,7 +225,7 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<void> signOut() async {
     // Sign out of Google too so the picker shows again next time.
     try {
-      await GoogleSignIn().signOut();
+      if (!kIsWeb) await GoogleSignIn().signOut();
     } catch (_) {
       // Non-fatal — user might never have signed in with Google.
     }

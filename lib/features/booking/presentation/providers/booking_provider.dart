@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/analytics/analytics_service.dart';
+import '../../../../core/uploads/storage_upload.dart';
 import '../../../../core/widgets/picked_file.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../../account_type/domain/account_type.dart';
@@ -134,7 +133,7 @@ class BookingNotifier extends Notifier<BookingDraft> {
           .child('bookings')
           .child(user.id)
           .child('${DateTime.now().millisecondsSinceEpoch}_$i.$ext');
-      final task = await ref0.putFile(File(f.path));
+      final task = await uploadPickedFile(ref0, f);
       return task.ref.getDownloadURL();
     }
 

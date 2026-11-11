@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/ui_preview.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../data/repositories/listings_repository.dart';
 import '../../domain/billboard_listing.dart';
@@ -15,6 +16,7 @@ final listingsRepositoryProvider = Provider<ListingsRepository>((ref) {
 /// Live stream of all active area listings, ordered by price ascending.
 /// Drives the Local tab on the home screen.
 final listingsStreamProvider = StreamProvider<List<BillboardListing>>((ref) {
+  if (kUiPreview) return Stream.value(sampleListings); // UI preview only
   return ref.watch(listingsRepositoryProvider).watchAll();
 });
 
@@ -22,5 +24,9 @@ final listingsStreamProvider = StreamProvider<List<BillboardListing>>((ref) {
 /// "Book my slot" so step 1 can summarise the picked area.
 final listingByIdProvider =
     FutureProvider.family<BillboardListing?, String>((ref, id) {
+  if (kUiPreview) {
+    // UI preview only
+    return sampleListings.where((l) => l.id == id).firstOrNull;
+  }
   return ref.watch(listingsRepositoryProvider).getById(id);
 });

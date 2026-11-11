@@ -10,6 +10,7 @@ import '../../domain/billboard_listing.dart';
 import '../providers/listings_provider.dart';
 import 'billboard_card.dart';
 import '../../../../app/theme/app_palette.dart';
+import '../../../../app/web/web_layout.dart';
 
 /// Local tab body — live search bar + filtered list of [BillboardCard]s.
 ///
@@ -122,6 +123,34 @@ class _LocalTabState extends ConsumerState<LocalTab> {
                 subtitle:
                     "We don't have boards in that area yet. Try Koramangala, "
                     'Madiwala, or Electronic City.',
+              );
+            }
+            // Desktop web: lay the area cards out in a grid instead of
+            // one long single column.
+            if (isWideWeb(context)) {
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  const gap = AppSpacing.xxl;
+                  final cols = constraints.maxWidth >= 1000 ? 3 : 2;
+                  final cardWidth =
+                      (constraints.maxWidth - gap * (cols - 1)) / cols;
+                  return Wrap(
+                    spacing: gap,
+                    runSpacing: gap,
+                    children: [
+                      for (final l in filtered)
+                        SizedBox(
+                          width: cardWidth,
+                          child: BillboardCard(
+                            listing: l,
+                            onTap: () => context.push(
+                              '${AppRoutes.bookingSelectType}?listingId=${l.id}',
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               );
             }
             return Column(

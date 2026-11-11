@@ -9,6 +9,7 @@ import '../widgets/home_app_bar.dart';
 import '../widgets/local_tab.dart';
 import '../widgets/premium_tab.dart';
 import '../../../../app/theme/app_palette.dart';
+import '../../../../app/web/web_layout.dart';
 
 /// Home tab — custom top bar, Local/Premium sub-tabs, and the matching
 /// content for each.
@@ -55,7 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         bottom: false,
         child: Column(
           children: [
-            const HomeAppBar(),
+            if (!isWideWeb(context)) const HomeAppBar(),
             _TabHeader(
               controller: _tabs,
               index: _index,

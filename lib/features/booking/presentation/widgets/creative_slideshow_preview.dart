@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/platform/local_file_image.dart';
 import '../../../../core/widgets/picked_file.dart';
 
 /// Plays the uploaded photos as an auto-advancing slideshow — a preview of
@@ -156,8 +156,8 @@ class _CreativeSlideshowPreviewState extends State<CreativeSlideshowPreview> {
                     duration: const Duration(milliseconds: 450),
                     child: SizedBox.expand(
                       key: ValueKey(safeIndex),
-                      child: Image.file(
-                        File(widget.images[safeIndex].path),
+                      child: localFileImage(
+                        widget.images[safeIndex].path,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -271,8 +271,8 @@ class _SlideshowFullscreenState extends State<_SlideshowFullscreen> {
                 child: InteractiveViewer(
                   minScale: 1,
                   maxScale: 4,
-                  child: Image.file(
-                    File(widget.images[i].path),
+                  child: localFileImage(
+                    widget.images[i].path,
                     fit: BoxFit.contain,
                   ),
                 ),

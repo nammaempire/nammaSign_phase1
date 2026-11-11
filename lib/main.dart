@@ -1,7 +1,7 @@
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +29,7 @@ Future<void> _onBackgroundMessage(RemoteMessage message) async {
   }
 }
 
- Future<void> main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Lock to portrait — change here if landscape support is needed.
@@ -67,20 +67,29 @@ Future<void> _onBackgroundMessage(RemoteMessage message) async {
   // Debug provider on debug builds (register the token printed in logcat
   // in Firebase Console → App Check); Play Integrity on release. Stays
   // NON-enforced until enforcement is toggled on in the console.
-  try {
-    await FirebaseAppCheck.instance.activate(
-      androidProvider:
-          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      appleProvider:
-          kDebugMode ? AppleProvider.debug : AppleProvider.appAttest,
-    );
-  } catch (e, st) {
-    appLogger.w('App Check activate failed', error: e, stackTrace: st);
+  // Skipped on web: the browser needs a reCAPTCHA provider + site key,
+  // which isn't registered yet.
+  if (!kIsWeb) {
+    try {
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: kDebugMode
+            ? AndroidProvider.debug
+            : AndroidProvider.playIntegrity,
+        appleProvider: kDebugMode
+            ? AppleProvider.debug
+            : AppleProvider.appAttest,
+      );
+    } catch (e, st) {
+      appLogger.w('App Check activate failed', error: e, stackTrace: st);
+    }
   }
 
   // Register the FCM background handler BEFORE the app starts so a push
   // arriving in the kill-state isolate can wake the handler up.
-  FirebaseMessaging.onBackgroundMessage(_onBackgroundMessage);
+  // (Mobile only — the web has no background isolate.)
+  if (!kIsWeb) {
+    FirebaseMessaging.onBackgroundMessage(_onBackgroundMessage);
+  }
 
   runApp(const ProviderScope(child: App()));
 }

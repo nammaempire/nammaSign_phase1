@@ -7,6 +7,8 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../app/theme/app_palette.dart';
+import '../../../../app/web/web_layout.dart';
+import '../../../../app/web/web_top_bar.dart';
 
 /// Bottom-tab shell used as the root for all signed-in routes.
 /// Three tabs per design: Home, History, Profile.
@@ -41,6 +43,24 @@ class MainShell extends StatelessWidget {
     // Status-bar icons must contrast with the theme background: dark icons
     // on the light theme, light icons on the dark theme.
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Desktop web: a top navigation bar replaces the bottom tab bar.
+    // (Never true on Android / iOS.)
+    if (isWideWeb(context)) {
+      return Scaffold(
+        backgroundColor: context.colors.bg,
+        body: Column(
+          children: [
+            WebTopBar(
+              activeIndex: navigationShell.currentIndex,
+              onNavTap: _onTap,
+            ),
+            Expanded(child: navigationShell),
+          ],
+        ),
+      );
+    }
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,

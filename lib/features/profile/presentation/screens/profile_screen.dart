@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/web/web_layout.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -397,12 +398,13 @@ class _DashboardGrid extends ConsumerWidget {
     );
 
     return GridView.count(
-      crossAxisCount: 2,
+      // Desktop web: four tiles in one row instead of a 2×2 of tall tiles.
+      crossAxisCount: isWideWeb(context) ? 4 : 2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: AppSpacing.md,
       crossAxisSpacing: AppSpacing.md,
-      childAspectRatio: 1.05,
+      childAspectRatio: isWideWeb(context) ? 1.25 : 1.05,
       children: [
         _StatTile(
           iconBg: const Color(0xFFEDE7FE),

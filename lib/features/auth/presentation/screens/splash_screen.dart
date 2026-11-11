@@ -96,7 +96,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.xxxl),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      // Matches the dark background of the Reset95 logo
+                      // artwork so the logo sits seamlessly in the card.
+                      color: const Color(0xFF04010D),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                       boxShadow: [
                         BoxShadow(

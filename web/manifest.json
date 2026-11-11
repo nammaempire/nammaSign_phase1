@@ -1,11 +1,11 @@
 {
-    "name": "nammasign_phase1",
-    "short_name": "nammasign_phase1",
+    "name": "Reset95",
+    "short_name": "Reset95",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#7B2FE3",
+    "theme_color": "#7B2FE3",
+    "description": "Book LED billboard ad slots in Bengaluru.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

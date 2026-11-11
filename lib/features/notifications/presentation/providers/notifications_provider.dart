@@ -1,3 +1,4 @@
+import '../../../../core/constants/ui_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -10,6 +11,7 @@ final notificationsStreamProvider =
     StreamProvider<List<AppNotification>>((ref) {
   final user = ref.watch(currentUserProvider);
   if (user == null) return Stream.value(const []);
+  if (kUiPreview) return Stream.value(const []); // UI preview only
   return ref.watch(notificationsRepositoryProvider).watchAll(user.id);
 });
 

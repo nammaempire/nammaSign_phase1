@@ -1,10 +1,10 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+
+import '../../../../core/platform/invoice_share.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -869,14 +869,7 @@ class _BookingActionsRow extends ConsumerWidget {
 
     try {
       final bytes = await InvoiceBuilder.build(data);
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/Reset95_invoice_$orderRef.pdf');
-      await file.writeAsBytes(bytes, flush: true);
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/pdf')],
-        subject: 'Reset95 invoice — $orderRef',
-        text: 'Tax invoice for your Reset95 booking $orderRef.',
-      );
+      await shareInvoicePdf(bytes: bytes, orderRef: orderRef);
       await ref.read(analyticsServiceProvider).invoiceDownloaded();
     } catch (e) {
       if (!context.mounted) return;

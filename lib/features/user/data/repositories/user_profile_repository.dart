@@ -1,9 +1,9 @@
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/uploads/storage_upload.dart';
 import '../../../../core/widgets/picked_file.dart';
 import '../../../account_type/domain/account_type.dart';
 import '../../domain/user_profile.dart';
@@ -131,7 +131,7 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
           .child(uid)
           .child('kycDocs')
           .child('${entry.key}.$ext');
-      final task = await ref.putFile(File(file.path));
+      final task = await uploadPickedFile(ref, file);
       urls[entry.key] = await task.ref.getDownloadURL();
     }
     await _doc(uid).set(

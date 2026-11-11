@@ -11,6 +11,7 @@ import '../providers/bookings_provider.dart';
 import '../widgets/booking_card.dart';
 import '../widgets/status_filter_chip.dart';
 import '../../../../app/theme/app_palette.dart';
+import '../../../../app/web/web_layout.dart';
 
 /// History tab — live list of the signed-in user's bookings, with
 /// status filter chips along the top.
@@ -181,7 +182,42 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                   ),
                                 ),
                               )
-                            : ListView.separated(
+                            : isWideWeb(context)
+                                // Desktop web: two-column grid of cards.
+                                ? SingleChildScrollView(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      AppSpacing.xxl,
+                                      AppSpacing.sm,
+                                      AppSpacing.xxl,
+                                      AppSpacing.xxxl,
+                                    ),
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        const gap = AppSpacing.lg;
+                                        final cardWidth =
+                                            (constraints.maxWidth - gap) / 2;
+                                        return Wrap(
+                                          spacing: gap,
+                                          runSpacing: gap,
+                                          children: [
+                                            for (final b in filtered)
+                                              SizedBox(
+                                                width: cardWidth,
+                                                child: BookingCard(
+                                                  booking: b,
+                                                  onTap: () => context.push(
+                                                    AppRoutes
+                                                        .campaignStatusFor(
+                                                            b.id),
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : ListView.separated(
                                 padding: const EdgeInsets.fromLTRB(
                                   AppSpacing.xxl,
                                   AppSpacing.sm,

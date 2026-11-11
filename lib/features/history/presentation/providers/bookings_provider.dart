@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/ui_preview.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/repositories/bookings_repository.dart';
@@ -16,6 +17,7 @@ final bookingsRepositoryProvider = Provider<BookingsRepository>((ref) {
 final userBookingsStreamProvider = StreamProvider<List<Booking>>((ref) {
   final user = ref.watch(currentUserProvider);
   if (user == null) return Stream.value(const []);
+  if (kUiPreview) return Stream.value(kPreviewBookings); // UI preview only
   return ref.watch(bookingsRepositoryProvider).watchForUser(user.id);
 });
 
@@ -23,5 +25,11 @@ final userBookingsStreamProvider = StreamProvider<List<Booking>>((ref) {
 /// so the user sees status updates the instant admin approves/rejects.
 final bookingByIdProvider =
     StreamProvider.family<Booking?, String>((ref, id) {
+  if (kUiPreview) {
+    // UI preview only
+    return Stream.value(
+      kPreviewBookings.where((b) => b.id == id).firstOrNull,
+    );
+  }
   return ref.watch(bookingsRepositoryProvider).watchOne(id);
 });

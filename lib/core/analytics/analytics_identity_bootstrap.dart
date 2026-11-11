@@ -1,4 +1,5 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/presentation/providers/auth_provider.dart';
@@ -25,7 +26,8 @@ class AnalyticsIdentityBootstrap {
     // Analytics on the same transition.
     _ref.listen(currentUserProvider, (prev, next) async {
       final analytics = _ref.read(analyticsServiceProvider);
-      final crashlytics = FirebaseCrashlytics.instance;
+      // Crashlytics has no web implementation — skip it in the browser.
+      final crashlytics = kIsWeb ? null : FirebaseCrashlytics.instance;
 
       final wasSignedIn = prev != null;
       final isSignedIn = next != null;
@@ -33,10 +35,10 @@ class AnalyticsIdentityBootstrap {
       if (!isSignedIn) {
         if (wasSignedIn) await analytics.signedOut();
         await analytics.setUserId(null);
-        await crashlytics.setUserIdentifier('');
+        await crashlytics?.setUserIdentifier('');
       } else {
         await analytics.setUserId(next.id);
-        await crashlytics.setUserIdentifier(next.id);
+        await crashlytics?.setUserIdentifier(next.id);
         if (!wasSignedIn) {
           // We don't know here whether it's a brand new account vs a
           // returning user. We log sign_in_completed; signUpCompleted

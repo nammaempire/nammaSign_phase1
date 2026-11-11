@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/platform/local_file_image.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/widgets/picked_file.dart';
 
@@ -63,7 +65,10 @@ class _CreativePreviewState extends State<CreativePreview> {
   Future<void> _initVideo() async {
     final path = widget.file?.path;
     if (path == null) return;
-    final controller = VideoPlayerController.file(File(path));
+    // Web has no file system — the picked video's path is a blob: URL.
+    final controller = kIsWeb
+        ? VideoPlayerController.networkUrl(Uri.parse(path))
+        : VideoPlayerController.file(File(path));
     try {
       await controller.initialize();
       controller.setLooping(true);
@@ -146,8 +151,8 @@ class _CreativePreviewState extends State<CreativePreview> {
       return _VideoStage(controller: video, maxSeconds: widget.maxVideoSeconds);
     }
 
-    return Image.file(
-      File(file.path),
+    return localFileImage(
+      file.path,
       fit: BoxFit.cover,
       errorBuilder: (_, _, _) => const _LoadingStage(),
     );

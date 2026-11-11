@@ -285,13 +285,13 @@ class _LogoCard extends StatelessWidget {
             color: AppColors.badgeDark,
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           ),
-          padding: const EdgeInsets.all(8),
+          clipBehavior: Clip.antiAlias,
           alignment: Alignment.center,
-          // No color tint — render the actual purple/white brand mark.
-          // (color: Colors.white flattened the whole logo into a white square.)
+          // No color tint — render the actual brand mark. The mark artwork
+          // has its own dark background, so it fills the whole tile.
           child: const BrandLogo(
             variant: LogoVariant.mark,
-            height: 36,
+            height: 64,
           ),
         ),
         Positioned(

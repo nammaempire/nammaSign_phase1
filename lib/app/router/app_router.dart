@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/utils/logger.dart';
+import '../web/web_layout.dart';
 import '../../features/auth/domain/entities/app_user.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/providers/splash_provider.dart';
@@ -64,8 +65,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final seenOnboarding = ref.read(onboardingSeenProvider);
       final signedIn = auth.asData?.value != null;
-      final atAuthRoute =
-          loc == AppRoutes.login || loc == AppRoutes.otp;
+      final atAuthRoute = loc == AppRoutes.login || loc == AppRoutes.otp;
       final atSetupRoute =
           loc == AppRoutes.accountType || loc.startsWith('/signup');
       final atOnboardingRoute = loc == AppRoutes.onboarding;
@@ -113,89 +113,124 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: AppRoutes.splash,
-        builder: (_, _) => const SplashScreen(),
-      ),
+      GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(
         path: AppRoutes.onboarding,
-        builder: (_, _) => const OnboardingScreen(),
+        builder: (_, _) => const WebPageFrame(
+          maxWidth: 520,
+          showNav: false,
+          child: OnboardingScreen(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.accountType,
-        builder: (_, _) => const AccountTypeScreen(),
+        builder: (_, _) => const WebPageFrame(
+          maxWidth: 560,
+          showNav: false,
+          child: AccountTypeScreen(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (_, _) => const LoginScreen(),
+        builder: (_, _) => const WebPageFrame(
+          maxWidth: 480,
+          showNav: false,
+          child: LoginScreen(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.otp,
-        builder: (_, _) => const OtpScreen(),
+        builder: (_, _) => const WebPageFrame(
+          maxWidth: 480,
+          showNav: false,
+          child: OtpScreen(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.signupCorporate,
-        builder: (_, _) => const CorporateSignupScreen(),
+        builder: (_, _) => const WebPageFrame(
+          maxWidth: 640,
+          showNav: false,
+          child: CorporateSignupScreen(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.signupIndividual,
-        builder: (_, _) => const IndividualSignupScreen(),
+        builder: (_, _) => const WebPageFrame(
+          maxWidth: 640,
+          showNav: false,
+          child: IndividualSignupScreen(),
+        ),
       ),
 
       // Booking flow (only reachable when signed in)
       GoRoute(
         path: AppRoutes.bookingSelectType,
-        builder: (_, state) => _BookingListingResolver(
-          listingId: state.uri.queryParameters['listingId'],
+        builder: (_, state) => WebPageFrame(
+          child: _BookingListingResolver(
+            listingId: state.uri.queryParameters['listingId'],
+          ),
         ),
       ),
       GoRoute(
         path: AppRoutes.bookingCorporate,
-        builder: (_, _) => const CorporateCampaignScreen(),
+        builder: (_, _) =>
+            const WebPageFrame(maxWidth: 760, child: CorporateCampaignScreen()),
       ),
       GoRoute(
         path: AppRoutes.bookingIndividual,
-        builder: (_, _) => const IndividualCampaignScreen(),
+        builder: (_, _) => const WebPageFrame(
+          maxWidth: 760,
+          child: IndividualCampaignScreen(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.bookingReview,
-        builder: (_, _) => const ReviewPayScreen(),
+        builder: (_, _) =>
+            const WebPageFrame(maxWidth: 760, child: ReviewPayScreen()),
       ),
       GoRoute(
         path: AppRoutes.bookingSuccess,
-        builder: (_, _) => const PaymentSuccessScreen(),
+        builder: (_, _) =>
+            const WebPageFrame(maxWidth: 640, child: PaymentSuccessScreen()),
       ),
       GoRoute(
         path: AppRoutes.bookingFailure,
-        builder: (_, _) => const PaymentFailureScreen(),
+        builder: (_, _) =>
+            const WebPageFrame(maxWidth: 640, child: PaymentFailureScreen()),
       ),
       GoRoute(
         path: AppRoutes.campaignStatus,
         builder: (_, state) {
           final id = state.pathParameters['bookingId']!;
-          return CampaignStatusScreen(bookingId: id);
+          return WebPageFrame(child: CampaignStatusScreen(bookingId: id));
         },
       ),
       GoRoute(
         path: AppRoutes.personalInfo,
-        builder: (_, _) => const PersonalInfoScreen(),
+        builder: (_, _) =>
+            const WebPageFrame(maxWidth: 720, child: PersonalInfoScreen()),
       ),
       GoRoute(
         path: AppRoutes.kycDocuments,
-        builder: (_, _) => const KycDocumentsScreen(),
+        builder: (_, _) =>
+            const WebPageFrame(maxWidth: 720, child: KycDocumentsScreen()),
       ),
       GoRoute(
         path: AppRoutes.notifications,
-        builder: (_, _) => const NotificationsScreen(),
+        builder: (_, _) =>
+            const WebPageFrame(maxWidth: 760, child: NotificationsScreen()),
       ),
       GoRoute(
         path: AppRoutes.help,
-        builder: (_, _) => const HelpScreen(),
+        builder: (_, _) =>
+            const WebPageFrame(maxWidth: 800, child: HelpScreen()),
       ),
       GoRoute(
         path: AppRoutes.legal,
-        builder: (_, state) => LegalPageScreen(
-          pageId: state.pathParameters['pageId']!,
+        builder: (_, state) => WebPageFrame(
+          maxWidth: 800,
+          child: LegalPageScreen(pageId: state.pathParameters['pageId']!),
         ),
       ),
 
@@ -203,30 +238,37 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _, navigationShell) =>
             MainShell(navigationShell: navigationShell),
         branches: [
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: AppRoutes.home,
-              builder: (_, _) => const HomeScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: AppRoutes.history,
-              builder: (_, _) => const HistoryScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: AppRoutes.profile,
-              builder: (_, _) => const ProfileScreen(),
-            ),
-          ]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.home,
+                builder: (_, _) => const WebContent(child: HomeScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.history,
+                builder: (_, _) =>
+                    const WebContent(maxWidth: 1100, child: HistoryScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.profile,
+                builder: (_, _) =>
+                    const WebContent(maxWidth: 800, child: ProfileScreen()),
+              ),
+            ],
+          ),
         ],
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(child: Text('Route not found: ${state.uri}')),
-    ),
+    errorBuilder: (context, state) =>
+        Scaffold(body: Center(child: Text('Route not found: ${state.uri}'))),
   );
 
   // Trigger a redirect re-evaluation once SharedPreferences finishes loading,
@@ -309,9 +351,8 @@ class _BookingListingResolver extends ConsumerWidget {
     }
     final async = ref.watch(listingByIdProvider(id));
     return async.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (_, _) => const _BookingListingUnavailable(),
       data: (listing) => listing == null
           ? const _BookingListingUnavailable()
@@ -361,7 +402,7 @@ class _BookingListingUnavailable extends StatelessWidget {
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: () => context.go(AppRoutes.home),
-                  child: const Text('Back to boards'),
+                  child: Text('Back to boards'),
                 ),
               ],
             ),

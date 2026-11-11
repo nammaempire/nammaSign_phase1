@@ -1,10 +1,10 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/platform/local_file_image.dart';
 import '../../../../core/widgets/picked_file.dart';
 
 /// Horizontal strip of the picked creative photos (up to [max]) with a
@@ -49,8 +49,8 @@ class CreativeThumbs extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                    child: Image.file(
-                      File(images[i].path),
+                    child: localFileImage(
+                      images[i].path,
                       width: 78,
                       height: 78,
                       fit: BoxFit.cover,
